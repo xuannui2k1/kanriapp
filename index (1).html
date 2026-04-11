@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>鮮魚在庫管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Serif+Display&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F7FA;--surface:#FFFFFF;--surface2:#F0F2F5;--border:#E2E6EC;
+  --text:#1A202C;--text2:#718096;--text3:#A0AEC0;
+  --accent:#0066FF;--accent-l:#EBF2FF;
+  --green:#00A878;--green-l:#E6F7F3;
+  --red:#E53E3E;--red-l:#FFF5F5;
+  --orange:#D97706;--orange-l:#FFFBEB;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+  --r:14px;--r-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+body{padding-bottom:80px}
+
+/* HEADER */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 var(--border)}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-fish{font-size:24px;line-height:1}
+.header-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--accent);letter-spacing:-.3px}
+.header-date{font-size:11px;color:var(--text2);margin-top:1px}
+.icon-btn{width:36px;height:36px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s}
+.icon-btn:active{transform:scale(.93)}
+
+/* TABS */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;position:sticky;top:61px;z-index:99}
+.tab{flex:1;padding:10px 4px 8px;text-align:center;font-size:11px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;user-select:none}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+.tab-icon{font-size:20px;display:block;margin-bottom:2px}
+
+/* PAGES */
+.page{display:none;padding:14px}
+.page.active{display:block}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:12px}
+.search-wrap input{width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:10px 14px 10px 38px;border-radius:var(--r);font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;transition:border-color .2s;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px}
+
+/* SECTION LABEL */
+.sec-label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;margin-top:4px;display:flex;justify-content:space-between;align-items:center}
+
+/* 出庫 STOCK CARDS — tồn > 0 mới hiện */
+.stock-list{display:flex;flex-direction:column;gap:8px}
+.stock-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+.stock-card:active{transform:scale(.98);border-color:var(--accent)}
+.stock-card.warn{border-color:var(--orange)}
+.fish-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;background:var(--surface2)}
+.stock-info{flex:1;min-width:0}
+.stock-name{font-weight:700;font-size:15px;letter-spacing:-.2px}
+.stock-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.stock-qty-block{text-align:right;flex-shrink:0}
+.stock-qty-num{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--green);line-height:1}
+.stock-qty-num.warn{color:var(--orange)}
+.stock-qty-unit{font-size:11px;color:var(--text3);margin-top:1px}
+.no-stock-msg{text-align:center;padding:50px 20px;color:var(--text2)}
+.no-stock-msg .e-icon{font-size:40px;margin-bottom:8px}
+
+/* 入庫 PRODUCT LIST */
+.product-list{display:flex;flex-direction:column;gap:6px;margin-bottom:90px}
+.product-row{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .2s;box-shadow:var(--shadow)}
+.product-row.open{border-color:var(--accent)}
+.product-row-hd{display:flex;align-items:center;padding:12px 14px;cursor:pointer;gap:10px;user-select:none}
+.product-row-hd:active{background:var(--surface2)}
+.prod-emoji{width:38px;height:38px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.prod-info{flex:1;min-width:0}
+.prod-name{font-weight:700;font-size:14px}
+.prod-meta{font-size:12px;color:var(--text2);margin-top:2px}
+.prod-chev{color:var(--text3);font-size:13px;flex-shrink:0;transition:transform .2s}
+.product-row.open .prod-chev{transform:rotate(90deg);color:var(--accent)}
+.cart-tag{display:inline-flex;align-items:center;gap:3px;background:var(--accent-l);color:var(--accent);font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:6px;vertical-align:middle}
+
+/* 入庫フォーム */
+.prod-form{display:none;border-top:1.5px solid var(--border);background:#FAFBFD;flex-direction:column}
+.product-row.open .prod-form{display:flex}
+
+/* ロット一覧（入庫内） */
+.in-lot-section{padding:10px 14px 0}
+.in-lot-title{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.in-lot-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.in-lot-row{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r-sm);padding:10px 12px;
+  display:flex;align-items:center;gap:10px;
+}
+.in-lot-info{flex:1}
+.in-lot-price{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
+.in-lot-remain{font-size:12px;color:var(--text2);margin-top:2px}
+.in-lot-add-btn{
+  background:var(--green-l);border:1.5px solid rgba(0,168,120,.25);
+  color:var(--green);padding:7px 12px;border-radius:8px;
+  font-family:'Noto Sans JP',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+}
+.in-lot-add-btn:active{transform:scale(.96)}
+
+/* ロット追加インライン入力 */
+.in-lot-add-form{
+  background:var(--green-l);border:1.5px solid rgba(0,168,120,.3);
+  border-radius:var(--r-sm);padding:10px 12px;
+  display:none;flex-direction:column;gap:8px;
+}
+.in-lot-add-form.show{display:flex}
+.in-lot-add-top{display:flex;align-items:center;justify-content:space-between}
+.in-lot-add-price{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--green)}
+.in-lot-add-row{display:flex;gap:8px;align-items:center}
+.in-lot-add-row input{
+  flex:1;background:var(--surface);border:1.5px solid rgba(0,168,120,.4);
+  color:var(--text);padding:9px 10px;border-radius:8px;
+  font-size:18px;font-family:'DM Mono',monospace;font-weight:500;
+  outline:none;text-align:center;-webkit-appearance:none;
+}
+.in-lot-add-row input:focus{border-color:var(--green)}
+.in-lot-confirm-btn{
+  background:var(--green);color:#fff;border:none;
+  padding:9px 14px;border-radius:8px;
+  font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:13px;cursor:pointer;
+  white-space:nowrap;flex-shrink:0;
+}
+.in-lot-cancel-btn{
+  background:none;border:none;color:var(--text2);
+  font-size:18px;cursor:pointer;padding:2px 4px;
+}
+
+/* 新規ロット入力 */
+.new-lot-section{padding:0 14px 14px}
+.new-lot-divider{display:flex;align-items:center;gap:8px;margin-bottom:10px;color:var(--text3);font-size:11px;font-weight:600;letter-spacing:.5px}
+.new-lot-divider::before,.new-lot-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.new-lot-form{display:flex;flex-direction:column;gap:8px}
+.form-date-row{display:flex;align-items:center;gap:8px}
+.form-date-row label{font-size:12px;color:var(--text2);flex-shrink:0;font-weight:500}
+.form-date-row input{flex:1;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:8px 10px;border-radius:var(--r-sm);font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none}
+.form-date-row input:focus{border-color:var(--accent)}
+.form-2col{display:flex;gap:8px}
+.fg{flex:1}
+.fg label{font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px;letter-spacing:.3px}
+.fg input{width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:9px 10px;border-radius:var(--r-sm);font-size:16px;font-family:'DM Mono',monospace;font-weight:500;outline:none;-webkit-appearance:none;text-align:right}
+.fg input:focus{border-color:var(--accent)}
+.amount-preview{background:var(--accent-l);border:1px solid rgba(0,102,255,.15);border-radius:var(--r-sm);padding:10px 12px;display:flex;justify-content:space-between;align-items:center}
+.amount-preview span:first-child{font-size:12px;color:var(--accent);font-weight:600}
+.amount-preview span:last-child{font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:var(--accent)}
+.form-btns{display:flex;gap:8px}
+.btn-add{flex:1;background:var(--accent);color:#fff;border:none;padding:11px;border-radius:var(--r-sm);font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:all .15s}
+.btn-add:active{transform:scale(.97)}
+.btn-close{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);padding:11px 14px;border-radius:var(--r-sm);font-family:'Noto Sans JP',sans-serif;font-size:14px;cursor:pointer}
+
+/* CART BAR */
+.cart-sticky{position:fixed;bottom:0;left:0;right:0;padding:10px 14px 18px;z-index:50;pointer-events:none}
+.cart-bar{background:var(--accent);color:#fff;border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 24px rgba(0,102,255,.35);pointer-events:all;cursor:pointer;transition:all .2s}
+.cart-bar:active{transform:scale(.98)}
+.cart-bar-info{flex:1}
+.cart-bar-title{font-weight:700;font-size:14px}
+.cart-bar-sub{font-size:12px;opacity:.8;margin-top:1px}
+.cart-submit{background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.4);padding:8px 14px;border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
+.cart-submit:active{background:rgba(255,255,255,.3)}
+.cart-detail{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow-lg);display:none;pointer-events:all}
+.cart-detail.open{display:block}
+.cart-dh{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600}
+.cart-item{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);gap:10px}
+.cart-item:last-child{border-bottom:none}
+.cart-item-name{font-weight:600;font-size:13px}
+.cart-item-detail{font-size:12px;color:var(--text2);margin-top:1px}
+.cart-item-amt{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--accent)}
+.cart-rm{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:2px 6px;flex-shrink:0}
+
+/* 出庫 LOT MODAL */
+.overlay{position:fixed;inset:0;background:rgba(15,20,30,.4);z-index:200;display:none;align-items:flex-end;backdrop-filter:blur(6px)}
+.overlay.open{display:flex}
+.sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:0 0 36px;width:100%;border-top:1px solid var(--border);animation:slideUp .25s cubic-bezier(.22,1,.36,1);max-height:85vh;overflow-y:auto}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0}
+.sheet-header{padding:14px 16px 12px;border-bottom:1px solid var(--border)}
+.sheet-title{font-weight:700;font-size:17px;letter-spacing:-.2px}
+.sheet-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.lot-list{padding:10px 14px;display:flex;flex-direction:column;gap:8px}
+.lot-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s}
+.lot-card:active{border-color:var(--accent);background:var(--accent-l)}
+.lot-card.selected{border-color:var(--accent);background:var(--accent-l)}
+.lot-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.lot-price{font-family:'DM Mono',monospace;font-size:18px;font-weight:500}
+.lot-badge{background:var(--green-l);color:var(--green);font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;font-family:'DM Mono',monospace}
+.lot-card-row{display:flex;gap:16px}
+.lot-stat{flex:1}
+.lot-stat-label{font-size:11px;color:var(--text2);font-weight:600;letter-spacing:.3px}
+.lot-stat-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;margin-top:2px}
+.lot-empty{padding:30px 20px;text-align:center;color:var(--text2);font-size:13px}
+.out-form{padding:14px;border-top:1px solid var(--border)}
+.out-form-title{font-size:12px;color:var(--text2);font-weight:600;margin-bottom:10px;letter-spacing:.3px}
+.out-qty-wrap{display:flex;gap:8px;margin-bottom:10px}
+.out-qty-wrap input{flex:1;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:12px 14px;border-radius:var(--r-sm);font-size:20px;font-family:'DM Mono',monospace;font-weight:500;outline:none;-webkit-appearance:none;text-align:center}
+.out-qty-wrap input:focus{border-color:var(--accent)}
+.out-date-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.out-date-row label{font-size:12px;color:var(--text2);font-weight:600;flex-shrink:0}
+.out-date-row input{flex:1;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:8px 10px;border-radius:var(--r-sm);font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none}
+.out-date-row input:focus{border-color:var(--accent)}
+.warn-box{background:var(--orange-l);border:1px solid var(--orange);border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--orange);font-weight:600;margin-bottom:10px;display:none;align-items:center;gap:6px}
+.warn-box.show{display:flex}
+.btn-full{width:100%;padding:13px;border-radius:var(--r-sm);border:none;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:all .15s}
+.btn-full:active{transform:scale(.98)}
+.btn-out{background:var(--red);color:#fff;margin-bottom:8px}
+.btn-cancel{background:var(--surface2);color:var(--text2);border:1.5px solid var(--border)}
+
+/* 履歴 */
+.date-row{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+.date-row input{flex:1;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:9px 12px;border-radius:var(--r);font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none}
+.date-row input:focus{border-color:var(--accent)}
+.today-btn{background:var(--surface);border:1.5px solid var(--border);color:var(--text2);padding:9px 12px;border-radius:var(--r);font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.hist-list{display:flex;flex-direction:column;gap:6px}
+.hist-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.hist-badge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;flex-shrink:0}
+.hist-badge.in{background:var(--green-l);color:var(--green)}
+.hist-badge.out{background:var(--red-l);color:var(--red)}
+.hist-info{flex:1;min-width:0}
+.hist-name{font-weight:700;font-size:14px}
+.hist-meta{font-size:12px;color:var(--text2);margin-top:2px}
+.hist-amt{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;text-align:right;flex-shrink:0}
+.hist-empty{text-align:center;padding:50px 20px;color:var(--text2)}
+.hist-empty .e-icon{font-size:40px;margin-bottom:8px}
+
+/* 設定 */
+.settings-page{display:none}
+.settings-page.active{display:block;padding:14px}
+.settings-back{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.back-btn{background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--r-sm);font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.settings-title{font-weight:700;font-size:17px}
+.set-section{margin-bottom:20px}
+.set-label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+.opening-row{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.opening-name{flex:1;font-size:14px;font-weight:600}
+.opening-input{width:72px;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:7px 8px;border-radius:8px;font-size:14px;font-family:'DM Mono',monospace;font-weight:500;text-align:center;outline:none}
+.opening-input:focus{border-color:var(--accent)}
+.opening-unit{font-size:12px;color:var(--text3);width:22px}
+.set-input{width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:11px 14px;border-radius:var(--r);font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;margin-bottom:8px}
+.set-input:focus{border-color:var(--accent)}
+
+/* 新商品 */
+.np-form-group{margin-bottom:12px}
+.np-label{font-size:12px;color:var(--text2);font-weight:600;display:block;margin-bottom:5px;letter-spacing:.3px}
+.np-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:11px 14px;border-radius:var(--r-sm);font-size:15px;font-family:'Noto Sans JP',sans-serif;outline:none}
+.np-input:focus{border-color:var(--accent)}
+
+/* SETUP */
+.setup-wrap{padding:20px}
+.setup-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.setup-fish{font-size:40px;margin-bottom:10px}
+.setup-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent);margin-bottom:4px}
+.setup-desc{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5}
+.setup-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:11px 14px;border-radius:var(--r-sm);font-size:13px;font-family:monospace;outline:none;margin-bottom:10px}
+.setup-input:focus{border-color:var(--accent)}
+.setup-btn{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:15px;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--text);color:#fff;padding:9px 18px;border-radius:100px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:400;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:var(--green)}
+.toast.err{background:var(--red)}
+.toast.warn{background:var(--orange)}
+
+/* LOADING */
+.loading{display:flex;flex-direction:column;align-items:center;padding:60px 20px;gap:12px;color:var(--text2)}
+.spin{width:32px;height:32px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* BUTTONS */
+.btn-sm{padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text2);font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.btn-sm.accent{background:var(--accent);color:#fff;border-color:transparent}
+.btn-sm.danger{background:var(--red);color:#fff;border-color:transparent}
+.btn-sm.green{background:var(--green);color:#fff;border-color:transparent}
+.mt8{margin-top:8px}
+.add-prod-btn{background:var(--accent-l);border:1.5px solid rgba(0,102,255,.2);color:var(--accent);padding:7px 12px;border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setupPage" class="setup-wrap">
+  <div class="setup-card">
+    <div class="setup-fish">🐟</div>
+    <div class="setup-title">鮮魚在庫管理</div>
+    <div class="setup-desc">Google Apps ScriptのデプロイURLを入力して接続してください</div>
+    <input class="setup-input" id="setupUrl" type="url" placeholder="https://script.google.com/macros/s/..." />
+    <button class="setup-btn" onclick="connect()">接続する</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="mainWrap" style="display:none">
+  <div class="header">
+    <div class="header-left">
+      <span class="header-fish">🐟</span>
+      <div>
+        <div class="header-title">鮮魚在庫管理</div>
+        <div class="header-date" id="hDate"></div>
+      </div>
+    </div>
+    <div class="icon-btn" onclick="showSettings()">⚙️</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="goTab('out')"><span class="tab-icon">📦</span>出庫</div>
+    <div class="tab" onclick="goTab('in')"><span class="tab-icon">🚢</span>入庫</div>
+    <div class="tab" onclick="goTab('hist')"><span class="tab-icon">📋</span>履歴</div>
+  </div>
+
+  <!-- TAB: 出庫 — tồn > 0 mới hiện -->
+  <div class="page active" id="page-out">
+    <div class="search-wrap">
+      <span class="si">🔍</span>
+      <input type="text" placeholder="商品名で検索..." oninput="filterOut()" id="outSearch" />
+    </div>
+    <div class="sec-label" id="outLabel">商品一覧</div>
+    <div class="stock-list" id="stockList"><div class="loading"><div class="spin"></div>読み込み中...</div></div>
+  </div>
+
+  <!-- TAB: 入庫 -->
+  <div class="page" id="page-in">
+    <div class="cart-detail" id="cartDetail">
+      <div class="cart-dh">
+        <span id="cartDHTitle">入庫リスト</span>
+        <button class="btn-sm danger" onclick="clearCart()">クリア</button>
+      </div>
+      <div id="cartItems"></div>
+    </div>
+    <div class="search-wrap">
+      <span class="si">🔍</span>
+      <input type="text" placeholder="商品名で検索..." oninput="filterIn()" id="inSearch" />
+    </div>
+    <div class="sec-label">
+      <span id="inLabel">商品一覧</span>
+      <button class="add-prod-btn" onclick="openNP()">＋ 新商品</button>
+    </div>
+    <div class="product-list" id="productList"><div class="loading"><div class="spin"></div>読み込み中...</div></div>
+    <div class="cart-sticky" id="cartSticky" style="display:none">
+      <div class="cart-bar" onclick="toggleCart()">
+        <div class="cart-bar-info">
+          <div class="cart-bar-title">🛒 <span id="cartCount">0件</span> カート中</div>
+          <div class="cart-bar-sub" id="cartTotal">合計 ¥0</div>
+        </div>
+        <button class="cart-submit" onclick="event.stopPropagation();submitIn()">入庫登録 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: 履歴 -->
+  <div class="page" id="page-hist">
+    <div class="date-row">
+      <input type="date" id="histDate" onchange="loadHist()" />
+      <button class="today-btn" onclick="todayHist()">今日</button>
+    </div>
+    <div class="hist-list" id="histList"><div class="loading"><div class="spin"></div>読み込み中...</div></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="settings-page" id="settingsPage">
+  <div class="settings-back">
+    <button class="back-btn" onclick="hideSettings()">← 戻る</button>
+    <span class="settings-title">設定</span>
+  </div>
+  <div class="set-section">
+    <div class="set-label">期首在庫</div>
+    <div id="openingList"><div class="loading"><div class="spin"></div></div></div>
+    <button class="btn-full btn-out mt8" style="background:var(--green);margin-top:10px" onclick="saveOpening()">💾 期首在庫を保存</button>
+  </div>
+  <div class="set-section">
+    <div class="set-label">API設定</div>
+    <input class="set-input" type="url" id="setUrl" placeholder="https://script.google.com/macros/s/..." />
+    <button class="btn-sm accent" onclick="updateUrl()">URLを更新</button>
+  </div>
+</div>
+
+<!-- 出庫 LOT MODAL -->
+<div class="overlay" id="outOverlay" onclick="if(event.target===this)closeOut()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="outSheetName">—</div>
+      <div class="sheet-sub">出庫するロットを選択してください</div>
+    </div>
+    <div class="lot-list" id="lotList"></div>
+    <div class="out-form" id="outForm" style="display:none">
+      <div class="out-form-title">出庫数量を入力 — <span id="selLotPrice">—</span></div>
+      <div class="out-qty-wrap">
+        <input type="number" id="outQty" placeholder="0" min="0.1" step="0.1" oninput="chkWarn()" />
+      </div>
+      <div class="out-date-row">
+        <label>出庫日</label>
+        <input type="date" id="outDate" />
+      </div>
+      <div class="warn-box" id="warnBox">⚠️ 在庫不足です。マイナスになります。</div>
+      <button class="btn-full btn-out" onclick="submitOut()">📤 出庫する</button>
+      <button class="btn-full btn-cancel mt8" onclick="closeOut()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新商品 MODAL -->
+<div class="overlay" id="npOverlay" onclick="if(event.target===this)closeNP()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">新商品を追加</div>
+      <div class="sheet-sub">商品マスターに登録します</div>
+    </div>
+    <div style="padding:14px">
+      <div class="np-form-group">
+        <label class="np-label">商品名</label>
+        <input class="np-input" type="text" id="npName" placeholder="例: ヒラメ" />
+      </div>
+      <div class="np-form-group">
+        <label class="np-label">規格（単位）</label>
+        <input class="np-input" type="text" id="npUnit" placeholder="例: 箱, kg, 本..." />
+      </div>
+      <button class="btn-full btn-out mt8" style="background:var(--accent)" onclick="submitNP()">✅ 追加する</button>
+      <button class="btn-full btn-cancel mt8" onclick="closeNP()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let API = localStorage.getItem('apiUrl') || '';
+let products = [], stock = [], lots = {}, cart = [], cartOpen = false;
+let openProd = null, selProduct = null, selLot = null;
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  setDates();
+  if (API) startApp();
+});
+
+function setDates() {
+  const t = new Date(), ds = fd(t);
+  document.getElementById('outDate').value = ds;
+  document.getElementById('histDate').value = ds;
+  const D = ['日','月','火','水','木','金','土'];
+  document.getElementById('hDate').textContent =
+    `${t.getFullYear()}年${t.getMonth()+1}月${t.getDate()}日（${D[t.getDay()]}）`;
+}
+
+function connect() {
+  const u = document.getElementById('setupUrl').value.trim();
+  if (!u) return toast('URLを入力してください','err');
+  API = u; localStorage.setItem('apiUrl', u); startApp();
+}
+function updateUrl() {
+  const u = document.getElementById('setUrl').value.trim();
+  if (!u) return toast('URLを入力してください','err');
+  API = u; localStorage.setItem('apiUrl', u); toast('更新しました','ok');
+}
+
+async function startApp() {
+  document.getElementById('setupPage').style.display = 'none';
+  document.getElementById('mainWrap').style.display = 'block';
+  document.getElementById('setUrl').value = API;
+  await Promise.all([loadProducts(), loadStock()]);
+  loadHist();
+}
+
+// ============================================================
+// API
+// ============================================================
+async function GET(action, params = {}) {
+  const u = new URL(API);
+  u.searchParams.set('action', action);
+  Object.entries(params).forEach(([k,v]) => u.searchParams.set(k,v));
+  return (await fetch(u.toString())).json();
+}
+async function POST(data) {
+  return (await fetch(API, { method:'POST', body:JSON.stringify(data) })).json();
+}
+
+// ============================================================
+// LOAD
+// ============================================================
+async function loadProducts() {
+  try { const d = await GET('getProducts'); products = d.products || []; }
+  catch(e) { toast('商品データ取得失敗','err'); }
+}
+
+async function loadStock() {
+  try {
+    const d = await GET('getStock');
+    stock = (d.stock || []).filter(s => s.name);
+    renderStock(stock);
+    renderProducts(stock);
+  } catch(e) {
+    document.getElementById('stockList').innerHTML = '<div class="loading">データ取得失敗</div>';
+  }
+}
+
+// ============================================================
+// 出庫タブ — tồn <= 0 thì ẩn
+// ============================================================
+function renderStock(data) {
+  const el = document.getElementById('stockList');
+  // ★ Chỉ hiển thị sản phẩm có tồn > 0
+  const visible = data.filter(s => s.currentQty > 0);
+  document.getElementById('outLabel').textContent = `在庫あり商品（${visible.length}件）`;
+  if (!visible.length) {
+    el.innerHTML = `<div class="no-stock-msg"><div class="e-icon">📭</div>在庫のある商品がありません</div>`;
+    return;
+  }
+  el.innerHTML = visible.map(s => {
+    const isLow = s.currentQty <= 2;
+    const p = s.lastUnitPrice ? `直近単価 ¥${s.lastUnitPrice.toLocaleString()}` : '単価未設定';
+    return `<div class="stock-card ${isLow?'warn':''}" onclick="openOut(${s.code})">
+      <div class="fish-icon">${emo(s.name)}</div>
+      <div class="stock-info">
+        <div class="stock-name">${s.name}</div>
+        <div class="stock-sub">${p} · #${s.code}</div>
+      </div>
+      <div class="stock-qty-block">
+        <div class="stock-qty-num ${isLow?'warn':''}">${fn(s.currentQty)}</div>
+        <div class="stock-qty-unit">${s.unit}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterOut() {
+  const q = document.getElementById('outSearch').value.toLowerCase();
+  renderStock(stock.filter(s => s.name.toLowerCase().includes(q) || String(s.code).includes(q)));
+}
+
+// ============================================================
+// 出庫 MODAL — ロット選択
+// ============================================================
+async function openOut(code) {
+  selProduct = stock.find(s => s.code == code);
+  if (!selProduct) return;
+  document.getElementById('outSheetName').textContent = selProduct.name;
+  document.getElementById('outForm').style.display = 'none';
+  document.getElementById('lotList').innerHTML = '<div class="loading"><div class="spin"></div>読み込み中...</div>';
+  document.getElementById('outOverlay').classList.add('open');
+  document.getElementById('outDate').value = fd(new Date());
+  document.getElementById('outQty').value = '';
+  document.getElementById('warnBox').classList.remove('show');
+  selLot = null;
+  try {
+    const d = await GET('getLots', { code });
+    const lotArr = d.lots || [];
+    if (!lotArr.length) {
+      document.getElementById('lotList').innerHTML = '<div class="lot-empty">📭 在庫ロットがありません</div>';
+      return;
+    }
+    document.getElementById('lotList').innerHTML = lotArr.map((l,i) =>
+      `<div class="lot-card" id="lc_${i}" onclick="selLotCard(${i},${l.unitPrice},${l.remainQty})">
+        <div class="lot-card-top">
+          <div class="lot-price">¥${l.unitPrice.toLocaleString()}<span style="font-size:12px;color:var(--text2)"> /単価</span></div>
+          <div class="lot-badge">${fn(l.remainQty)} ${selProduct.unit}</div>
+        </div>
+        <div class="lot-card-row">
+          <div class="lot-stat"><div class="lot-stat-label">残数量</div><div class="lot-stat-val">${fn(l.remainQty)} ${selProduct.unit}</div></div>
+          <div class="lot-stat"><div class="lot-stat-label">残金額</div><div class="lot-stat-val">¥${l.remainAmount.toLocaleString()}</div></div>
+        </div>
+      </div>`
+    ).join('');
+  } catch(e) {
+    document.getElementById('lotList').innerHTML = '<div class="lot-empty">データ取得失敗</div>';
+  }
+}
+
+function selLotCard(idx, price, remainQty) {
+  selLot = { price, remainQty };
+  document.getElementById('selLotPrice').textContent = `¥${price.toLocaleString()} /単価`;
+  document.getElementById('outForm').style.display = 'block';
+  document.getElementById('outQty').focus();
+  document.querySelectorAll('.lot-card').forEach((c,i) => c.classList.toggle('selected', i===idx));
+  setTimeout(() => document.getElementById('outForm').scrollIntoView({behavior:'smooth',block:'nearest'}), 100);
+}
+
+function chkWarn() {
+  const qty = parseFloat(document.getElementById('outQty').value) || 0;
+  document.getElementById('warnBox').classList.toggle('show', selLot && qty > selLot.remainQty);
+}
+
+async function submitOut() {
+  const qty = parseFloat(document.getElementById('outQty').value);
+  if (!qty || qty <= 0) return toast('数量を入力してください','err');
+  if (!selLot || !selProduct) return;
+  try {
+    await POST({ action:'addEntry', date:document.getElementById('outDate').value,
+      type:'出庫', code:selProduct.code, name:selProduct.name,
+      unit:selProduct.unit, qty, unitPrice:selLot.price });
+    closeOut();
+    toast(`${selProduct.name} ${qty}${selProduct.unit} 出庫完了 ✓`,'ok');
+    await Promise.all([loadProducts(), loadStock()]);
+  } catch(e) { toast('送信失敗','err'); }
+}
+
+function closeOut() { document.getElementById('outOverlay').classList.remove('open'); selLot = null; }
+
+// ============================================================
+// 入庫タブ — ロット表示 + 新規ロット
+// ============================================================
+async function renderProducts(data) {
+  const el = document.getElementById('productList');
+  document.getElementById('inLabel').textContent = `商品一覧（${(data||[]).length}件）`;
+  if (!data || !data.length) { el.innerHTML = '<div class="loading">商品がありません</div>'; return; }
+
+  // 全商品のロットを一括取得（キャッシュ）
+  const today = fd(new Date());
+  el.innerHTML = '<div class="loading"><div class="spin"></div>読み込み中...</div>';
+
+  // ロット情報を並行取得
+  const lotResults = await Promise.all(
+    data.map(s => GET('getLots', { code: s.code }).catch(() => ({ lots:[] })))
+  );
+  data.forEach((s, i) => { lots[s.code] = lotResults[i].lots || []; });
+
+  el.innerHTML = data.map(s => {
+    const inCart = cart.filter(c => c.code == s.code).length;
+    const tag = inCart ? `<span class="cart-tag">✓ ×${inCart}</span>` : '';
+    const lotList = lots[s.code] || [];
+
+    // 既存ロットHTML
+    const existingLots = lotList.map((l, li) => `
+      <div class="in-lot-row" id="ilr_${s.code}_${li}">
+        <div class="in-lot-info">
+          <div class="in-lot-price">¥${l.unitPrice.toLocaleString()}</div>
+          <div class="in-lot-remain">残 ${fn(l.remainQty)}${s.unit} · ¥${l.remainAmount.toLocaleString()}</div>
+        </div>
+        <button class="in-lot-add-btn" onclick="showLotAddForm(${s.code},${li},${l.unitPrice},'${s.unit}')">＋ 追加</button>
+      </div>
+      <div class="in-lot-add-form" id="ilaf_${s.code}_${li}">
+        <div class="in-lot-add-top">
+          <div class="in-lot-add-price">¥${l.unitPrice.toLocaleString()} /単価</div>
+          <button class="in-lot-cancel-btn" onclick="hideLotAddForm(${s.code},${li})">✕</button>
+        </div>
+        <div class="in-lot-add-row">
+          <input type="number" id="ilaq_${s.code}_${li}" placeholder="数量" min="0.1" step="0.1" />
+          <button class="in-lot-confirm-btn" onclick="addToLot(${s.code},${li},${l.unitPrice},'${s.name}','${s.unit}')">追加 ✓</button>
+        </div>
+      </div>
+    `).join('');
+
+    return `<div class="product-row" id="pr_${s.code}">
+      <div class="product-row-hd" onclick="toggleProd(${s.code})">
+        <div class="prod-emoji">${emo(s.name)}</div>
+        <div class="prod-info">
+          <div class="prod-name">${s.name}${tag}</div>
+          <div class="prod-meta">在庫 ${fn(s.currentQty)}${s.unit} · ロット ${lotList.length}件</div>
+        </div>
+        <div class="prod-chev">▶</div>
+      </div>
+      <div class="prod-form" id="pf_${s.code}">
+        ${lotList.length ? `
+        <div class="in-lot-section">
+          <div class="in-lot-title">既存ロット（在庫あり）</div>
+          <div class="in-lot-list">${existingLots}</div>
+        </div>` : ''}
+        <div class="new-lot-section">
+          ${lotList.length ? '<div class="new-lot-divider">新しい単価で入庫</div>' : ''}
+          <div class="new-lot-form">
+            <div class="form-date-row">
+              <label>入庫日</label>
+              <input type="date" id="pd_${s.code}" value="${today}" />
+            </div>
+            <div class="form-2col">
+              <div class="fg">
+                <label>数量</label>
+                <input type="number" id="pq_${s.code}" placeholder="0" min="0" step="0.1" oninput="calcAmt(${s.code})" />
+              </div>
+              <div class="fg">
+                <label>単価（円）</label>
+                <input type="number" id="pp_${s.code}" placeholder="0" min="0" step="1" oninput="calcAmt(${s.code})" />
+              </div>
+            </div>
+            <div class="amount-preview">
+              <span>金額</span>
+              <span id="pa_${s.code}">¥ —</span>
+            </div>
+            <div class="form-btns">
+              <button class="btn-add" onclick="addNewLot(${s.code},'${s.name}','${s.unit}')">＋ カートに追加</button>
+              <button class="btn-close" onclick="toggleProd(${s.code})">閉じる</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showLotAddForm(code, idx, price, unit) {
+  // 他の追加フォームを閉じる
+  document.querySelectorAll('.in-lot-add-form').forEach(f => f.classList.remove('show'));
+  document.getElementById(`ilaf_${code}_${idx}`).classList.add('show');
+  document.getElementById(`ilaq_${code}_${idx}`).focus();
+}
+
+function hideLotAddForm(code, idx) {
+  document.getElementById(`ilaf_${code}_${idx}`).classList.remove('show');
+}
+
+function addToLot(code, idx, unitPrice, name, unit) {
+  const qty = parseFloat(document.getElementById(`ilaq_${code}_${idx}`)?.value);
+  const date = document.getElementById(`pd_${code}`)?.value || fd(new Date());
+  if (!qty || qty <= 0) return toast('数量を入力してください','err');
+  cart.push({ date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice });
+  hideLotAddForm(code, idx);
+  updateCartUI();
+  toast(`${name} ¥${unitPrice.toLocaleString()} ロットに追加`,'ok');
+}
+
+function calcAmt(code) {
+  const q = parseFloat(document.getElementById(`pq_${code}`)?.value) || 0;
+  const p = parseFloat(document.getElementById(`pp_${code}`)?.value) || 0;
+  document.getElementById(`pa_${code}`).textContent = (q && p) ? `¥${Math.round(q*p).toLocaleString()}` : '¥ —';
+}
+
+function addNewLot(code, name, unit) {
+  const qty = parseFloat(document.getElementById(`pq_${code}`)?.value);
+  const unitPrice = parseFloat(document.getElementById(`pp_${code}`)?.value);
+  const date = document.getElementById(`pd_${code}`)?.value || fd(new Date());
+  if (!qty || qty <= 0) return toast('数量を入力してください','err');
+  if (!unitPrice || unitPrice <= 0) return toast('単価を入力してください','err');
+  cart.push({ date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice });
+  updateCartUI();
+  toggleProd(code);
+  toast(`${name} 新規ロットをカートに追加`,'ok');
+}
+
+function toggleProd(code) {
+  if (openProd && openProd !== code) {
+    const prev = document.getElementById(`pr_${openProd}`);
+    if (prev) prev.classList.remove('open');
+  }
+  const row = document.getElementById(`pr_${code}`);
+  if (!row) return;
+  if (openProd === code) { row.classList.remove('open'); openProd = null; }
+  else { row.classList.add('open'); openProd = code; setTimeout(() => row.scrollIntoView({behavior:'smooth',block:'nearest'}), 100); }
+}
+
+function filterIn() {
+  const q = document.getElementById('inSearch').value.toLowerCase();
+  renderProducts(stock.filter(s => s.name.toLowerCase().includes(q) || String(s.code).includes(q)));
+}
+
+// ============================================================
+// CART
+// ============================================================
+function updateCartUI() {
+  const cnt = cart.length, total = cart.reduce((s,c) => s+(c.amount||0), 0);
+  document.getElementById('cartSticky').style.display = cnt ? 'block' : 'none';
+  document.getElementById('cartCount').textContent = `${cnt}件`;
+  document.getElementById('cartTotal').textContent = `合計 ¥${Math.round(total).toLocaleString()}`;
+  document.getElementById('cartDHTitle').textContent = `入庫リスト（${cnt}件）`;
+  document.getElementById('cartItems').innerHTML = cart.map((item,i) =>
+    `<div class="cart-item">
+      <div style="flex:1">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-detail">${item.qty}${item.unit} × ¥${item.unitPrice.toLocaleString()}</div>
+      </div>
+      <div class="cart-item-amt">¥${Math.round(item.amount).toLocaleString()}</div>
+      <button class="cart-rm" onclick="removeCart(${i})">✕</button>
+    </div>`
+  ).join('');
+}
+
+function toggleCart() {
+  cartOpen = !cartOpen;
+  document.getElementById('cartDetail').classList.toggle('open', cartOpen);
+}
+function removeCart(i) {
+  cart.splice(i,1);
+  if (!cart.length) { cartOpen = false; document.getElementById('cartDetail').classList.remove('open'); }
+  updateCartUI();
+}
+function clearCart() {
+  cart = []; cartOpen = false;
+  document.getElementById('cartDetail').classList.remove('open');
+  updateCartUI();
+}
+
+async function submitIn() {
+  if (!cart.length) return;
+  try {
+    await POST({ action:'addBatchEntry', entries:cart });
+    const cnt = cart.length; clearCart();
+    toast(`${cnt}件の入庫を登録しました ✓`,'ok');
+    await Promise.all([loadProducts(), loadStock()]);
+    goTab('out');
+  } catch(e) { toast('送信失敗','err'); }
+}
+
+// ============================================================
+// 履歴
+// ============================================================
+async function loadHist() {
+  const date = document.getElementById('histDate').value;
+  const el = document.getElementById('histList');
+  el.innerHTML = '<div class="loading"><div class="spin"></div>読み込み中...</div>';
+  try {
+    const d = await GET('getHistory', date ? {date} : {});
+    const h = d.history || [];
+    if (!h.length) { el.innerHTML = '<div class="hist-empty"><div class="e-icon">📭</div>この日の記録はありません</div>'; return; }
+    el.innerHTML = h.map(r => {
+      const isIn = r.type==='入庫', aQ=Math.abs(r.qty), aA=Math.abs(r.amount);
+      return `<div class="hist-card">
+        <div class="hist-badge ${isIn?'in':'out'}">${r.type}</div>
+        <div class="hist-info">
+          <div class="hist-name">${r.name}</div>
+          <div class="hist-meta">${aQ}${r.unit} × ¥${Number(r.unitPrice).toLocaleString()}</div>
+        </div>
+        <div class="hist-amt" style="color:${isIn?'var(--green)':'var(--red)'}">
+          ${isIn?'+':'-'}¥${aA.toLocaleString()}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="hist-empty">データ取得失敗</div>'; }
+}
+function todayHist() { document.getElementById('histDate').value = fd(new Date()); loadHist(); }
+
+// ============================================================
+// 設定
+// ============================================================
+function showSettings() {
+  document.getElementById('mainWrap').style.display='none';
+  document.getElementById('settingsPage').classList.add('active');
+  loadOpening();
+}
+function hideSettings() {
+  document.getElementById('settingsPage').classList.remove('active');
+  document.getElementById('mainWrap').style.display='block';
+}
+async function loadOpening() {
+  const el = document.getElementById('openingList');
+  try {
+    const d = await GET('getOpeningStock');
+    const op = {}; (d.stock||[]).forEach(o => op[o.code]=o);
+    el.innerHTML = products.filter(p=>p.name).map(p => {
+      const o = op[p.code]||{};
+      return `<div class="opening-row">
+        <div class="opening-name">${p.name}</div>
+        <input class="opening-input" type="number" id="op_${p.code}" value="${o.qty||0}" min="0" step="0.1" />
+        <div class="opening-unit">${p.unit}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML='<div style="color:var(--red);padding:10px">読み込み失敗</div>'; }
+}
+async function saveOpening() {
+  const s = products.filter(p=>p.name).map(p=>({
+    code:p.code, name:p.name,
+    qty:parseFloat(document.getElementById(`op_${p.code}`)?.value)||0, unitPrice:0
+  }));
+  try { await POST({action:'setOpeningStock',stock:s}); toast('期首在庫を保存しました','ok'); await loadStock(); }
+  catch(e) { toast('保存失敗','err'); }
+}
+
+// 新商品
+function openNP() { document.getElementById('npName').value=''; document.getElementById('npUnit').value=''; document.getElementById('npOverlay').classList.add('open'); }
+function closeNP() { document.getElementById('npOverlay').classList.remove('open'); }
+async function submitNP() {
+  const name=document.getElementById('npName').value.trim(), unit=document.getElementById('npUnit').value.trim();
+  if(!name) return toast('商品名を入力してください','err');
+  try { await POST({action:'addProduct',name,unit}); await Promise.all([loadProducts(),loadStock()]); closeNP(); toast(`${name} を追加しました`,'ok'); }
+  catch(e){ toast('追加失敗','err'); }
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function goTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['out','in','hist'][i]===name));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  if (name==='hist') loadHist();
+}
+function toast(msg,type='ok') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+function fd(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fn(n) {
+  if(n===undefined||n===null) return 0;
+  return Math.round(n*100)/100;
+}
+function emo(name) {
+  const m={'むつ':'🐟','クエ':'🐡','マグロ':'🐠','イカ':'🦑','タコ':'🐙','サバ':'🐟','アナゴ':'🐍','カマス':'🐟','カニ':'🦀','ホタテ':'🐚','サワラ':'🐟','ホタル':'🦑','送料':'📦','包材':'📦','ヒラ':'🐟','タイ':'🐠','ブリ':'🐟'};
+  for(const[k,v] of Object.entries(m)){if(name.includes(k))return v}
+  return '🐠';
+}
+</script>
+</body>
+</html>
