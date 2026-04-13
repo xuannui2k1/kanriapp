@@ -370,6 +370,8 @@ body{padding-bottom:80px}
     <div class="set-label">期首在庫</div>
     <div id="openingList"><div class="loading"><div class="spin"></div></div></div>
     <button class="btn-full btn-out mt8" style="background:var(--green);margin-top:10px" onclick="saveOpening()">💾 期首在庫を保存</button>
+    <button class="btn-full mt8" style="background:var(--orange);color:#fff;width:100%;padding:13px;border-radius:var(--r-sm);border:none;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:15px;cursor:pointer;margin-top:8px" onclick="fixNegativeStock()">🔧 マイナス在庫を0に修正</button>
+    <div id="fixResult" style="display:none;margin-top:8px;background:var(--green-l);border:1px solid var(--green);border-radius:var(--r-sm);padding:10px 12px;font-size:13px;color:var(--green);font-weight:600"></div>
   </div>
   <div class="set-section">
     <div class="set-label">API設定</div>
@@ -944,6 +946,52 @@ async function submitNP() {
 // ============================================================
 // UTILS
 // ============================================================
+async function fixNegativeStock() {
+  // 在庫がマイナスの商品を取得して期首在庫を調整
+  try {
+    const d = await GET('getStock');
+    const negatives = (d.stock || []).filter(s => s.currentQty < 0);
+    
+    if (!negatives.length) {
+      document.getElementById('fixResult').style.display = 'block';
+      document.getElementById('fixResult').textContent = '✅ マイナス在庫はありません！';
+      return;
+    }
+
+    // 現在の期首在庫を取得
+    const op = await GET('getOpeningStock');
+    const openingMap = {};
+    (op.stock || []).forEach(o => { openingMap[o.code] = o; });
+
+    // マイナス分を期首在庫に加算して0にする
+    const newStock = products.filter(p => p.name).map(p => {
+      const current = negatives.find(n => n.code == p.code);
+      const existing = openingMap[p.code] || { qty: 0, unitPrice: 0 };
+      let qty = existing.qty || 0;
+      if (current) {
+        // マイナス分だけ期首在庫を増やして0にする
+        qty = qty + Math.abs(current.currentQty);
+      }
+      return { code: p.code, name: p.name, qty, unitPrice: existing.unitPrice || 0 };
+    });
+
+    await POST({ action: 'setOpeningStock', stock: newStock });
+
+    // 結果表示
+    const names = negatives.map(n => `${n.name}(${fn(n.currentQty)}→0)`).join('、');
+    const resultEl = document.getElementById('fixResult');
+    resultEl.style.display = 'block';
+    resultEl.textContent = `✅ 修正完了: ${names}`;
+
+    // 再読み込み
+    await Promise.all([loadProducts(), loadStock()]);
+    loadOpening();
+    toast(`${negatives.length}件のマイナス在庫を修正しました`, 'ok');
+  } catch(e) {
+    toast('修正失敗', 'err');
+  }
+}
+
 function goTab(name) {
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['out','in','hist'][i]===name));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
