@@ -509,8 +509,17 @@ async function loadStock() {
 // ============================================================
 function renderStock(data) {
   const el = document.getElementById('stockList');
-  // ★ Chỉ hiển thị sản phẩm có tồn > 0
-  const visible = data.filter(s => s.currentQty > 0);
+  // ★ Chỉ ẩn khi tổng tồn <= 0 (tất cả lô đều hết)
+  // Lô âm riêng lẻ không ảnh hưởng nếu lô khác vẫn còn
+  // 少なくとも1つのロットに在庫があれば表示
+  // currentQtyが0以下でも、特定ロットが正の場合は表示する
+  const visible = data.filter(s => {
+    // ロット在庫がある可能性がある場合は表示
+    // (期首在庫 + 入庫合計) > 出庫合計 なら何らかのロットが残っている
+    const totalIn = (s.openingQty || 0) + (s.inQty || 0);
+    const totalOut = s.outQty || 0;
+    return totalIn > totalOut;
+  });
   document.getElementById('outLabel').textContent = `在庫あり商品（${visible.length}件）`;
   if (!visible.length) {
     el.innerHTML = `<div class="no-stock-msg"><div class="e-icon">📭</div>在庫のある商品がありません</div>`;
@@ -587,21 +596,56 @@ function selLotCard(idx, price, remainQty) {
 
 function chkWarn() {
   const qty = parseFloat(document.getElementById('outQty').value) || 0;
-  document.getElementById('warnBox').classList.toggle('show', selLot && qty > selLot.remainQty);
+  const over = selLot && qty > selLot.remainQty;
+  const warnBox = document.getElementById('warnBox');
+  warnBox.classList.toggle('show', over);
+  if (over) {
+    warnBox.textContent = `⚠️ 在庫不足！残数 ${selLot.remainQty}${selProduct?.unit||''} に対して ${qty}${selProduct?.unit||''} 出庫するとマイナスになります`;
+  }
 }
 
-async function submitOut() {
+let isSubmitting = false;
+let pendingOut = null;
+
+function submitOut() {
   const qty = parseFloat(document.getElementById('outQty').value);
   if (!qty || qty <= 0) return toast('数量を入力してください','err');
   if (!selLot || !selProduct) return;
+
+  // 確認モーダルに情報をセット
+  const remain = selLot.remainQty - qty;
+  pendingOut = { qty, date: document.getElementById('outDate').value };
+
+  document.getElementById('cfTitle').textContent = selProduct.name + ' を出庫';
+  document.getElementById('cfQty').textContent = `${qty} ${selProduct.unit}`;
+  document.getElementById('cfRemain').textContent = `${fn(remain)} ${selProduct.unit}`;
+  document.getElementById('cfRemain').style.color = remain < 0 ? 'var(--red)' : 'var(--green)';
+  document.getElementById('cfWarn').style.display = remain < 0 ? 'block' : 'none';
+
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+async function confirmOut() {
+  if (isSubmitting || !pendingOut || !selLot || !selProduct) return;
+  isSubmitting = true;
+  const btn = document.getElementById('cfBtn');
+  if (btn) { btn.textContent = '送信中...'; btn.style.opacity = '0.6'; }
+
   try {
-    await POST({ action:'addEntry', date:document.getElementById('outDate').value,
+    await POST({ action:'addEntry', date: pendingOut.date,
       type:'出庫', code:selProduct.code, name:selProduct.name,
-      unit:selProduct.unit, qty, unitPrice:selLot.price });
+      unit:selProduct.unit, qty: pendingOut.qty, unitPrice:selLot.price });
+    document.getElementById('confirmOverlay').classList.remove('open');
     closeOut();
-    toast(`${selProduct.name} ${qty}${selProduct.unit} 出庫完了 ✓`,'ok');
+    toast(`${selProduct.name} ${pendingOut.qty}${selProduct.unit} 出庫完了 ✓`,'ok');
+    pendingOut = null;
     await Promise.all([loadProducts(), loadStock()]);
-  } catch(e) { toast('送信失敗','err'); }
+  } catch(e) {
+    toast('送信失敗','err');
+  } finally {
+    isSubmitting = false;
+    if (btn) { btn.textContent = '📤 出庫確定'; btn.style.opacity = '1'; }
+  }
 }
 
 function closeOut() { document.getElementById('outOverlay').classList.remove('open'); selLot = null; }
@@ -687,7 +731,7 @@ async function renderProducts(data) {
               <span id="pa_${s.code}">¥ —</span>
             </div>
             <div class="form-btns">
-              <button class="btn-add" onclick="addNewLot(${s.code},'${s.name}','${s.unit}')">＋ カートに追加</button>
+              <button class="btn-add" onclick="addNewLot(${s.code},'${s.name}','${s.unit}')">＋ 入庫登録</button>
               <button class="btn-close" onclick="toggleProd(${s.code})">閉じる</button>
             </div>
           </div>
@@ -708,14 +752,27 @@ function hideLotAddForm(code, idx) {
   document.getElementById(`ilaf_${code}_${idx}`).classList.remove('show');
 }
 
-function addToLot(code, idx, unitPrice, name, unit) {
+let isInSubmitting = false;
+async function addToLot(code, idx, unitPrice, name, unit) {
+  if (isInSubmitting) return;
   const qty = parseFloat(document.getElementById(`ilaq_${code}_${idx}`)?.value);
   const date = document.getElementById(`pd_${code}`)?.value || fd(new Date());
   if (!qty || qty <= 0) return toast('数量を入力してください','err');
-  cart.push({ date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice });
-  hideLotAddForm(code, idx);
-  updateCartUI();
-  toast(`${name} ¥${unitPrice.toLocaleString()} ロットに追加`,'ok');
+  isInSubmitting = true;
+  const btn = document.querySelector(`#ilaf_${code}_${idx} .in-lot-confirm-btn`);
+  if (btn) { btn.textContent = '送信中...'; btn.style.opacity = '0.6'; }
+  try {
+    await POST({ action:'addEntry', date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice });
+    hideLotAddForm(code, idx);
+    document.getElementById(`ilaq_${code}_${idx}`).value = '';
+    toast(`${name} ¥${unitPrice.toLocaleString()} 入庫完了 ✓`,'ok');
+    await Promise.all([loadProducts(), loadStock()]);
+  } catch(e) {
+    toast('送信失敗','err');
+  } finally {
+    isInSubmitting = false;
+    if (btn) { btn.textContent = '追加 ✓'; btn.style.opacity = '1'; }
+  }
 }
 
 function calcAmt(code) {
@@ -724,16 +781,27 @@ function calcAmt(code) {
   document.getElementById(`pa_${code}`).textContent = (q && p) ? `¥${Math.round(q*p).toLocaleString()}` : '¥ —';
 }
 
-function addNewLot(code, name, unit) {
+async function addNewLot(code, name, unit) {
+  if (isInSubmitting) return;
   const qty = parseFloat(document.getElementById(`pq_${code}`)?.value);
   const unitPrice = parseFloat(document.getElementById(`pp_${code}`)?.value);
   const date = document.getElementById(`pd_${code}`)?.value || fd(new Date());
   if (!qty || qty <= 0) return toast('数量を入力してください','err');
   if (!unitPrice || unitPrice <= 0) return toast('単価を入力してください','err');
-  cart.push({ date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice });
-  updateCartUI();
-  toggleProd(code);
-  toast(`${name} 新規ロットをカートに追加`,'ok');
+  isInSubmitting = true;
+  const btn = document.querySelector(`#pr_${code} .btn-add`);
+  if (btn) { btn.textContent = '送信中...'; btn.style.opacity = '0.6'; }
+  try {
+    await POST({ action:'addEntry', date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice });
+    toggleProd(code);
+    toast(`${name} 入庫完了 ✓`,'ok');
+    await Promise.all([loadProducts(), loadStock()]);
+  } catch(e) {
+    toast('送信失敗','err');
+  } finally {
+    isInSubmitting = false;
+    if (btn) { btn.textContent = '＋ 入庫登録'; btn.style.opacity = '1'; }
+  }
 }
 
 function toggleProd(code) {
@@ -757,7 +825,7 @@ function filterIn() {
 // ============================================================
 function updateCartUI() {
   const cnt = cart.length, total = cart.reduce((s,c) => s+(c.amount||0), 0);
-  document.getElementById('cartSticky').style.display = cnt ? 'block' : 'none';
+  document.getElementById('cartSticky').style.display = 'none'; // カート廃止
   document.getElementById('cartCount').textContent = `${cnt}件`;
   document.getElementById('cartTotal').textContent = `合計 ¥${Math.round(total).toLocaleString()}`;
   document.getElementById('cartDHTitle').textContent = `入庫リスト（${cnt}件）`;
@@ -900,5 +968,33 @@ function emo(name) {
   return '🐠';
 }
 </script>
+
+<!-- 出庫確認 MODAL -->
+<div class="overlay" id="confirmOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="cfTitle">出庫確認</div>
+      <div class="sheet-sub">以下の内容で出庫しますか？</div>
+    </div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+      <div style="background:var(--surface2);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--text2);font-weight:600">出庫数量</span>
+          <span style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--red)" id="cfQty">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text2);font-weight:600">出庫後の残高</span>
+          <span style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700" id="cfRemain">—</span>
+        </div>
+      </div>
+      <div id="cfWarn" style="display:none;background:var(--orange-l);border:1px solid var(--orange);border-radius:var(--r-sm);padding:10px 12px;font-size:13px;color:var(--orange);font-weight:600;text-align:center">
+        ⚠️ 出庫後に残高がマイナスになります！
+      </div>
+      <button class="btn-full btn-out" id="cfBtn" onclick="confirmOut()">📤 出庫確定</button>
+      <button class="btn-full btn-cancel mt8" onclick="document.getElementById('confirmOverlay').classList.remove('open')">キャンセル</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
