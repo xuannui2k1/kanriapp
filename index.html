@@ -509,8 +509,11 @@ async function loadStock() {
   try {
     const d = await GET('getStock');
     stock = (d.stock || []).filter(s => s.name);
-    renderStock(stock);
-    renderProducts(stock);
+    renderStock(stock); // 出庫タブのみ即時レンダリング
+    // 入庫タブはアクティブな時だけレンダリング（重くなるのを防ぐ）
+    if (document.getElementById('page-in').classList.contains('active')) {
+      renderProducts(stock);
+    }
   } catch(e) {
     document.getElementById('stockList').innerHTML = '<div class="loading">データ取得失敗</div>';
   }
@@ -1047,7 +1050,9 @@ function goTab(name) {
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['out','in','hist'][i]===name));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(`page-${name}`).classList.add('active');
-  if (name==='hist') loadHist();
+  if (name === 'hist') loadHist();
+  if (name === 'in') renderProducts(stock); // 入庫タブに切り替えた時だけロット取得
+  if (name === 'out') renderStock(stock);   // 出庫タブに戻った時も再レンダリング
 }
 function toast(msg,type='ok') {
   const t=document.getElementById('toast');
