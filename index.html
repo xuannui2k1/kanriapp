@@ -317,7 +317,17 @@ body{padding-bottom:80px}
       <span class="si">🔍</span>
       <input type="text" placeholder="商品名で検索..." oninput="filterOut()" id="outSearch" />
     </div>
-    <div class="sec-label" id="outLabel">商品一覧</div>
+    <div class="sec-label" id="outLabel">
+      <span>商品一覧</span>
+      <button class="btn-sm" id="checkBtn" onclick="toggleCheck()" style="font-size:12px">⚠️ 在庫チェック</button>
+    </div>
+    <!-- 在庫チェックパネル -->
+    <div id="checkPanel" style="display:none;margin-bottom:12px">
+      <div style="background:var(--orange-l);border:1.5px solid var(--orange);border-radius:var(--r);padding:12px 14px;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:10px;letter-spacing:.3px">⚠️ 要確認 — 在庫0以下の商品</div>
+        <div id="checkList"></div>
+      </div>
+    </div>
     <div class="stock-list" id="stockList"><div class="loading"><div class="spin"></div>読み込み中...</div></div>
   </div>
 
@@ -946,6 +956,47 @@ async function submitNP() {
 // ============================================================
 // UTILS
 // ============================================================
+let checkOpen = false;
+function toggleCheck() {
+  checkOpen = !checkOpen;
+  const panel = document.getElementById('checkPanel');
+  const btn = document.getElementById('checkBtn');
+  panel.style.display = checkOpen ? 'block' : 'none';
+  btn.style.background = checkOpen ? 'var(--orange)' : '';
+  btn.style.color = checkOpen ? '#fff' : '';
+  btn.style.borderColor = checkOpen ? 'transparent' : '';
+  if (checkOpen) renderCheckList();
+}
+
+function renderCheckList() {
+  const el = document.getElementById('checkList');
+  // 在庫0以下の商品
+  const problems = stock.filter(s => {
+    const totalIn = (s.openingQty || 0) + (s.inQty || 0);
+    const totalOut = s.outQty || 0;
+    return (totalIn - totalOut) <= 0;
+  });
+
+  if (!problems.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--green);font-size:13px;font-weight:600;padding:8px">✅ 問題なし！全商品の在庫は正常です</div>';
+    return;
+  }
+
+  el.innerHTML = problems.map(s => {
+    const qty = fn((s.openingQty||0) + (s.inQty||0) - (s.outQty||0));
+    const isNeg = qty < 0;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(217,119,6,.2)">
+      <div>
+        <div style="font-weight:700;font-size:14px">${emo(s.name)} ${s.name}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">${isNeg ? '⛔ 在庫マイナス' : '⚠️ 在庫ゼロ'}</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:${isNeg ? 'var(--red)' : 'var(--orange)'}">
+        ${qty} ${s.unit}
+      </div>
+    </div>`;
+  }).join('');
+}
+
 async function fixNegativeStock() {
   // 在庫がマイナスの商品を取得して期首在庫を調整
   try {
