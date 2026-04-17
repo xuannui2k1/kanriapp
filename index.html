@@ -317,8 +317,8 @@ body{padding-bottom:80px}
       <span class="si">🔍</span>
       <input type="text" placeholder="商品名で検索..." oninput="filterOut()" id="outSearch" />
     </div>
-    <div class="sec-label" id="outLabel">
-      <span>商品一覧</span>
+    <div class="sec-label">
+      <span id="outLabelText">商品一覧</span>
       <button class="btn-sm" id="checkBtn" onclick="toggleCheck()" style="font-size:12px">⚠️ 在庫チェック</button>
     </div>
     <!-- 在庫チェックパネル -->
@@ -535,7 +535,7 @@ function renderStock(data) {
     const totalOut = s.outQty || 0;
     return totalIn > totalOut;
   });
-  document.getElementById('outLabel').textContent = `在庫あり商品（${visible.length}件）`;
+  document.getElementById('outLabelText').textContent = `在庫あり商品（${visible.length}件）`;
   if (!visible.length) {
     el.innerHTML = `<div class="no-stock-msg"><div class="e-icon">📭</div>在庫のある商品がありません</div>`;
     return;
