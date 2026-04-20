@@ -4,127 +4,296 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>鮮魚在庫管理</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Serif+Display&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#F5F7FA;--surface:#FFFFFF;--surface2:#F0F2F5;--border:#E2E6EC;
-  --text:#1A202C;--text2:#718096;--text3:#A0AEC0;
-  --accent:#0066FF;--accent-l:#EBF2FF;
-  --green:#00A878;--green-l:#E6F7F3;
-  --red:#E53E3E;--red-l:#FFF5F5;
-  --orange:#D97706;--orange-l:#FFFBEB;
-  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
-  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
-  --r:14px;--r-sm:8px;
+:root {
+  --bg:       #EEF2F7;
+  --surface:  #FFFFFF;
+  --surface2: #F7F9FC;
+  --surface3: #EEF2F7;
+  --border:   #DDE3EC;
+  --border2:  #C8D0DC;
+  --text:     #0F1923;
+  --text2:    #5A6478;
+  --text3:    #9AA3B2;
+  --accent:   #1A6BFF;
+  --accent-l: #EBF2FF;
+  --accent-d: #1456D6;
+  --green:    #059669;
+  --green-l:  #ECFDF5;
+  --red:      #DC2626;
+  --red-l:    #FEF2F2;
+  --orange:   #D97706;
+  --orange-l: #FFFBEB;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+  --shadow:    0 2px 8px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
+  --r:    16px;
+  --r-sm: 10px;
+  --r-xs: 6px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
-body{padding-bottom:80px}
+html,body{
+  background:var(--bg);color:var(--text);
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:14px;-webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+body{padding-bottom:90px}
 
-/* HEADER */
-.header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 var(--border)}
-.header-left{display:flex;align-items:center;gap:10px}
-.header-fish{font-size:24px;line-height:1}
-.header-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--accent);letter-spacing:-.3px}
-.header-date{font-size:11px;color:var(--text2);margin-top:1px}
-.icon-btn{width:36px;height:36px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s}
-.icon-btn:active{transform:scale(.93)}
+/* ── HEADER ── */
+.header{
+  background:var(--surface);
+  padding:14px 18px 12px;
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 1px 0 var(--border),0 2px 8px rgba(0,0,0,.04);
+}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-logo{
+  width:38px;height:38px;border-radius:12px;
+  background:linear-gradient(135deg,#1A6BFF,#0A4ED6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;box-shadow:0 2px 8px rgba(26,107,255,.3);
+}
+.header-title{
+  font-family:'Outfit',sans-serif;
+  font-size:18px;font-weight:700;
+  color:var(--text);letter-spacing:-.3px;
+}
+.header-date{font-size:11px;color:var(--text3);margin-top:1px;font-weight:500}
+.icon-btn{
+  width:38px;height:38px;border-radius:12px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:16px;transition:all .15s;
+  box-shadow:var(--shadow-sm);
+}
+.icon-btn:active{transform:scale(.92);background:var(--border)}
 
-/* TABS */
-.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;position:sticky;top:61px;z-index:99}
-.tab{flex:1;padding:10px 4px 8px;text-align:center;font-size:11px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;user-select:none}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
-.tab-icon{font-size:20px;display:block;margin-bottom:2px}
+/* ── TABS ── */
+.tabs{
+  background:var(--surface);
+  border-bottom:1.5px solid var(--border);
+  display:flex;position:sticky;top:65px;z-index:99;
+  box-shadow:0 2px 6px rgba(0,0,0,.04);
+}
+.tab{
+  flex:1;padding:10px 4px 9px;
+  text-align:center;font-size:11px;font-weight:600;
+  color:var(--text3);cursor:pointer;
+  border-bottom:2.5px solid transparent;
+  transition:all .2s;user-select:none;letter-spacing:.2px;
+}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-icon{font-size:19px;display:block;margin-bottom:3px}
 
-/* PAGES */
-.page{display:none;padding:14px}
+/* ── PAGES ── */
+.page{display:none;padding:16px}
 .page.active{display:block}
 
-/* SEARCH */
-.search-wrap{position:relative;margin-bottom:12px}
-.search-wrap input{width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:10px 14px 10px 38px;border-radius:var(--r);font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;transition:border-color .2s;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.search-wrap input:focus{border-color:var(--accent)}
-.search-wrap .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px}
+/* ── SEARCH ── */
+.search-wrap{position:relative;margin-bottom:14px}
+.search-wrap input{
+  width:100%;background:var(--surface);
+  border:1.5px solid var(--border);
+  color:var(--text);padding:11px 14px 11px 40px;
+  border-radius:var(--r);font-size:14px;
+  font-family:'Noto Sans JP',sans-serif;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  box-shadow:var(--shadow-sm);
+  font-weight:500;
+}
+.search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,107,255,.1)}
+.search-wrap input::placeholder{color:var(--text3)}
+.search-wrap .si{
+  position:absolute;left:13px;top:50%;
+  transform:translateY(-50%);color:var(--text3);font-size:15px;
+}
 
-/* SECTION LABEL */
-.sec-label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;margin-top:4px;display:flex;justify-content:space-between;align-items:center}
+/* ── SECTION LABEL ── */
+.sec-label{
+  font-size:11px;font-weight:700;color:var(--text2);
+  letter-spacing:.8px;text-transform:uppercase;
+  margin-bottom:10px;margin-top:2px;
+  display:flex;justify-content:space-between;align-items:center;
+}
 
-/* 出庫 STOCK CARDS — tồn > 0 mới hiện */
-.stock-list{display:flex;flex-direction:column;gap:8px}
-.stock-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
-.stock-card:active{transform:scale(.98);border-color:var(--accent)}
-.stock-card.warn{border-color:var(--orange)}
-.fish-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;background:var(--surface2)}
+/* ── 出庫 STOCK CARDS ── */
+.stock-list{display:flex;flex-direction:column;gap:10px}
+.stock-card{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:var(--r);padding:14px 16px;
+  cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:14px;
+  box-shadow:var(--shadow);
+}
+.stock-card:active{transform:scale(.985);box-shadow:var(--shadow-sm)}
+.stock-card:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(26,107,255,.1)}
+.stock-card.warn{border-color:var(--orange);background:var(--orange-l)}
+.fish-icon{
+  width:46px;height:46px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;
+  background:var(--surface2);border:1.5px solid var(--border);
+}
 .stock-info{flex:1;min-width:0}
-.stock-name{font-weight:700;font-size:15px;letter-spacing:-.2px}
-.stock-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.stock-name{
+  font-family:'Outfit',sans-serif;
+  font-weight:600;font-size:15px;letter-spacing:-.2px;
+}
+.stock-sub{font-size:12px;color:var(--text2);margin-top:3px;font-weight:500}
 .stock-qty-block{text-align:right;flex-shrink:0}
-.stock-qty-num{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--green);line-height:1}
+.stock-qty-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:24px;font-weight:600;
+  color:var(--green);line-height:1;
+}
 .stock-qty-num.warn{color:var(--orange)}
-.stock-qty-unit{font-size:11px;color:var(--text3);margin-top:1px}
-.no-stock-msg{text-align:center;padding:50px 20px;color:var(--text2)}
-.no-stock-msg .e-icon{font-size:40px;margin-bottom:8px}
+.stock-qty-unit{font-size:11px;color:var(--text3);margin-top:2px;font-weight:600}
+.stock-arrow{
+  color:var(--text3);font-size:12px;flex-shrink:0;margin-left:4px;
+}
 
-/* 入庫 PRODUCT LIST */
-.product-list{display:flex;flex-direction:column;gap:6px;margin-bottom:90px}
-.product-row{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .2s;box-shadow:var(--shadow)}
-.product-row.open{border-color:var(--accent)}
-.product-row-hd{display:flex;align-items:center;padding:12px 14px;cursor:pointer;gap:10px;user-select:none}
+/* ── 在庫チェック ── */
+.check-panel{
+  background:var(--surface);border:1.5px solid var(--orange);
+  border-radius:var(--r);overflow:hidden;margin-bottom:14px;
+  box-shadow:0 2px 8px rgba(217,119,6,.1);
+}
+.check-panel-header{
+  background:var(--orange-l);padding:10px 14px;
+  border-bottom:1px solid rgba(217,119,6,.2);
+  font-size:12px;font-weight:700;color:var(--orange);letter-spacing:.3px;
+}
+.check-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+}
+.check-item:last-child{border-bottom:none}
+.check-item-name{font-weight:600;font-size:14px}
+.check-item-tag{
+  font-size:11px;color:var(--text2);margin-top:2px;font-weight:500;
+}
+.check-item-qty{
+  font-family:'JetBrains Mono',monospace;
+  font-size:18px;font-weight:600;
+}
+
+/* ── CHECK BTN ── */
+.check-btn{
+  background:var(--surface);border:1.5px solid var(--border);
+  color:var(--text2);padding:6px 12px;border-radius:var(--r-sm);
+  font-family:'Noto Sans JP',sans-serif;font-size:11px;
+  font-weight:700;cursor:pointer;letter-spacing:.3px;
+  transition:all .15s;display:flex;align-items:center;gap:4px;
+}
+.check-btn.active{background:var(--orange);color:#fff;border-color:transparent}
+.check-btn:active{transform:scale(.95)}
+
+/* ── 入庫 PRODUCT LIST ── */
+.product-list{display:flex;flex-direction:column;gap:8px;margin-bottom:90px}
+.product-row{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r);overflow:hidden;
+  transition:border-color .2s;box-shadow:var(--shadow);
+}
+.product-row.open{border-color:var(--accent);box-shadow:0 4px 16px rgba(26,107,255,.12)}
+.product-row-hd{
+  display:flex;align-items:center;padding:13px 16px;
+  cursor:pointer;gap:12px;user-select:none;
+}
 .product-row-hd:active{background:var(--surface2)}
-.prod-emoji{width:38px;height:38px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.prod-emoji{
+  width:40px;height:40px;border-radius:12px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
 .prod-info{flex:1;min-width:0}
-.prod-name{font-weight:700;font-size:14px}
-.prod-meta{font-size:12px;color:var(--text2);margin-top:2px}
-.prod-chev{color:var(--text3);font-size:13px;flex-shrink:0;transition:transform .2s}
-.product-row.open .prod-chev{transform:rotate(90deg);color:var(--accent)}
-.cart-tag{display:inline-flex;align-items:center;gap:3px;background:var(--accent-l);color:var(--accent);font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:6px;vertical-align:middle}
+.prod-name{
+  font-family:'Outfit',sans-serif;
+  font-weight:600;font-size:14px;letter-spacing:-.1px;
+}
+.prod-meta{font-size:12px;color:var(--text2);margin-top:3px;font-weight:500}
+.prod-chev{
+  width:24px;height:24px;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text3);font-size:10px;flex-shrink:0;
+  transition:all .2s;
+}
+.product-row.open .prod-chev{
+  background:var(--accent-l);border-color:rgba(26,107,255,.2);
+  color:var(--accent);transform:rotate(90deg);
+}
+.cart-tag{
+  display:inline-flex;align-items:center;gap:3px;
+  background:var(--accent-l);color:var(--accent);
+  font-size:10px;font-weight:700;padding:2px 7px;
+  border-radius:var(--r-xs);margin-left:6px;vertical-align:middle;
+}
 
-/* 入庫フォーム */
-.prod-form{display:none;border-top:1.5px solid var(--border);background:#FAFBFD;flex-direction:column}
+/* ── 入庫フォーム ── */
+.prod-form{
+  display:none;border-top:1.5px solid var(--border);
+  background:var(--surface2);flex-direction:column;
+}
 .product-row.open .prod-form{display:flex}
 
-/* ロット一覧（入庫内） */
-.in-lot-section{padding:10px 14px 0}
-.in-lot-title{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+/* ロットセクション */
+.in-lot-section{padding:12px 16px 0}
+.in-lot-title{
+  font-size:10px;font-weight:700;color:var(--text2);
+  letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;
+}
 .in-lot-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .in-lot-row{
   background:var(--surface);border:1.5px solid var(--border);
   border-radius:var(--r-sm);padding:10px 12px;
   display:flex;align-items:center;gap:10px;
+  box-shadow:var(--shadow-sm);
 }
 .in-lot-info{flex:1}
-.in-lot-price{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
-.in-lot-remain{font-size:12px;color:var(--text2);margin-top:2px}
-.in-lot-add-btn{
-  background:var(--green-l);border:1.5px solid rgba(0,168,120,.25);
-  color:var(--green);padding:7px 12px;border-radius:8px;
-  font-family:'Noto Sans JP',sans-serif;font-size:12px;font-weight:700;
-  cursor:pointer;white-space:nowrap;flex-shrink:0;
+.in-lot-price{
+  font-family:'JetBrains Mono',monospace;
+  font-size:15px;font-weight:600;color:var(--text);
 }
-.in-lot-add-btn:active{transform:scale(.96)}
+.in-lot-remain{font-size:12px;color:var(--text2);margin-top:2px;font-weight:500}
+.in-lot-add-btn{
+  background:var(--green-l);border:1.5px solid rgba(5,150,105,.2);
+  color:var(--green);padding:7px 12px;border-radius:var(--r-sm);
+  font-family:'Noto Sans JP',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;
+}
+.in-lot-add-btn:active{transform:scale(.95)}
 
-/* ロット追加インライン入力 */
+/* ロット追加インライン */
 .in-lot-add-form{
-  background:var(--green-l);border:1.5px solid rgba(0,168,120,.3);
-  border-radius:var(--r-sm);padding:10px 12px;
+  background:var(--green-l);border:1.5px solid rgba(5,150,105,.25);
+  border-radius:var(--r-sm);padding:12px;
   display:none;flex-direction:column;gap:8px;
 }
 .in-lot-add-form.show{display:flex}
 .in-lot-add-top{display:flex;align-items:center;justify-content:space-between}
-.in-lot-add-price{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--green)}
+.in-lot-add-price{
+  font-family:'JetBrains Mono',monospace;
+  font-size:14px;font-weight:600;color:var(--green);
+}
 .in-lot-add-row{display:flex;gap:8px;align-items:center}
 .in-lot-add-row input{
-  flex:1;background:var(--surface);border:1.5px solid rgba(0,168,120,.4);
-  color:var(--text);padding:9px 10px;border-radius:8px;
-  font-size:18px;font-family:'DM Mono',monospace;font-weight:500;
+  flex:1;background:var(--surface);border:1.5px solid rgba(5,150,105,.3);
+  color:var(--text);padding:10px;border-radius:var(--r-sm);
+  font-size:20px;font-family:'JetBrains Mono',monospace;font-weight:600;
   outline:none;text-align:center;-webkit-appearance:none;
 }
 .in-lot-add-row input:focus{border-color:var(--green)}
 .in-lot-confirm-btn{
   background:var(--green);color:#fff;border:none;
-  padding:9px 14px;border-radius:8px;
-  font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:13px;cursor:pointer;
-  white-space:nowrap;flex-shrink:0;
+  padding:10px 14px;border-radius:var(--r-sm);
+  font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:13px;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
 }
 .in-lot-cancel-btn{
   background:none;border:none;color:var(--text2);
@@ -132,151 +301,420 @@ body{padding-bottom:80px}
 }
 
 /* 新規ロット入力 */
-.new-lot-section{padding:0 14px 14px}
-.new-lot-divider{display:flex;align-items:center;gap:8px;margin-bottom:10px;color:var(--text3);font-size:11px;font-weight:600;letter-spacing:.5px}
-.new-lot-divider::before,.new-lot-divider::after{content:'';flex:1;height:1px;background:var(--border)}
-.new-lot-form{display:flex;flex-direction:column;gap:8px}
-.form-date-row{display:flex;align-items:center;gap:8px}
-.form-date-row label{font-size:12px;color:var(--text2);flex-shrink:0;font-weight:500}
-.form-date-row input{flex:1;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:8px 10px;border-radius:var(--r-sm);font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none}
+.new-lot-section{padding:0 16px 14px}
+.new-lot-divider{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:12px;color:var(--text3);
+  font-size:11px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;
+}
+.new-lot-divider::before,.new-lot-divider::after{
+  content:'';flex:1;height:1.5px;background:var(--border);
+}
+.form-date-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.form-date-row label{
+  font-size:12px;color:var(--text2);flex-shrink:0;
+  font-weight:600;letter-spacing:.2px;
+}
+.form-date-row input{
+  flex:1;background:var(--surface);border:1.5px solid var(--border);
+  color:var(--text);padding:9px 12px;border-radius:var(--r-sm);
+  font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;
+  box-shadow:var(--shadow-sm);
+}
 .form-date-row input:focus{border-color:var(--accent)}
-.form-2col{display:flex;gap:8px}
+.form-2col{display:flex;gap:8px;margin-bottom:10px}
 .fg{flex:1}
-.fg label{font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px;letter-spacing:.3px}
-.fg input{width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:9px 10px;border-radius:var(--r-sm);font-size:16px;font-family:'DM Mono',monospace;font-weight:500;outline:none;-webkit-appearance:none;text-align:right}
-.fg input:focus{border-color:var(--accent)}
-.amount-preview{background:var(--accent-l);border:1px solid rgba(0,102,255,.15);border-radius:var(--r-sm);padding:10px 12px;display:flex;justify-content:space-between;align-items:center}
-.amount-preview span:first-child{font-size:12px;color:var(--accent);font-weight:600}
-.amount-preview span:last-child{font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:var(--accent)}
+.fg label{
+  font-size:11px;color:var(--text2);font-weight:700;
+  display:block;margin-bottom:5px;letter-spacing:.3px;text-transform:uppercase;
+}
+.fg input{
+  width:100%;background:var(--surface);border:1.5px solid var(--border);
+  color:var(--text);padding:10px 12px;border-radius:var(--r-sm);
+  font-size:17px;font-family:'JetBrains Mono',monospace;font-weight:600;
+  outline:none;-webkit-appearance:none;text-align:right;
+  box-shadow:var(--shadow-sm);
+}
+.fg input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,107,255,.1)}
+.amount-preview{
+  background:var(--accent-l);border:1.5px solid rgba(26,107,255,.15);
+  border-radius:var(--r-sm);padding:11px 14px;
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:10px;
+}
+.amount-preview span:first-child{
+  font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.3px;
+}
+.amount-preview span:last-child{
+  font-family:'JetBrains Mono',monospace;
+  font-size:18px;font-weight:600;color:var(--accent);
+}
 .form-btns{display:flex;gap:8px}
-.btn-add{flex:1;background:var(--accent);color:#fff;border:none;padding:11px;border-radius:var(--r-sm);font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:all .15s}
-.btn-add:active{transform:scale(.97)}
-.btn-close{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);padding:11px 14px;border-radius:var(--r-sm);font-family:'Noto Sans JP',sans-serif;font-size:14px;cursor:pointer}
+.btn-add{
+  flex:1;background:var(--accent);color:#fff;border:none;
+  padding:12px;border-radius:var(--r-sm);
+  font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:14px;
+  cursor:pointer;transition:all .15s;letter-spacing:.2px;
+  box-shadow:0 2px 8px rgba(26,107,255,.3);
+}
+.btn-add:active{transform:scale(.97);background:var(--accent-d)}
+.btn-close{
+  background:var(--surface);border:1.5px solid var(--border);
+  color:var(--text2);padding:12px 14px;border-radius:var(--r-sm);
+  font-family:'Noto Sans JP',sans-serif;font-size:14px;cursor:pointer;
+  font-weight:600;
+}
 
-/* CART BAR */
-.cart-sticky{position:fixed;bottom:0;left:0;right:0;padding:10px 14px 18px;z-index:50;pointer-events:none}
-.cart-bar{background:var(--accent);color:#fff;border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 24px rgba(0,102,255,.35);pointer-events:all;cursor:pointer;transition:all .2s}
-.cart-bar:active{transform:scale(.98)}
-.cart-bar-info{flex:1}
-.cart-bar-title{font-weight:700;font-size:14px}
-.cart-bar-sub{font-size:12px;opacity:.8;margin-top:1px}
-.cart-submit{background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.4);padding:8px 14px;border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
-.cart-submit:active{background:rgba(255,255,255,.3)}
-.cart-detail{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow-lg);display:none;pointer-events:all}
-.cart-detail.open{display:block}
-.cart-dh{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600}
-.cart-item{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);gap:10px}
-.cart-item:last-child{border-bottom:none}
-.cart-item-name{font-weight:600;font-size:13px}
-.cart-item-detail{font-size:12px;color:var(--text2);margin-top:1px}
-.cart-item-amt{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--accent)}
-.cart-rm{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:2px 6px;flex-shrink:0}
-
-/* 出庫 LOT MODAL */
-.overlay{position:fixed;inset:0;background:rgba(15,20,30,.4);z-index:200;display:none;align-items:flex-end;backdrop-filter:blur(6px)}
+/* ── 出庫 MODAL ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,10,20,.5);
+  z-index:200;display:none;align-items:flex-end;
+  backdrop-filter:blur(8px);
+}
 .overlay.open{display:flex}
-.sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:0 0 36px;width:100%;border-top:1px solid var(--border);animation:slideUp .25s cubic-bezier(.22,1,.36,1);max-height:85vh;overflow-y:auto}
+.sheet{
+  background:var(--surface);border-radius:24px 24px 0 0;
+  padding:0 0 40px;width:100%;
+  box-shadow:0 -4px 32px rgba(0,0,0,.15);
+  animation:slideUp .3s cubic-bezier(.22,1,.36,1);
+  max-height:88vh;overflow-y:auto;
+}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0}
-.sheet-header{padding:14px 16px 12px;border-bottom:1px solid var(--border)}
-.sheet-title{font-weight:700;font-size:17px;letter-spacing:-.2px}
-.sheet-sub{font-size:12px;color:var(--text2);margin-top:3px}
-.lot-list{padding:10px 14px;display:flex;flex-direction:column;gap:8px}
-.lot-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s}
-.lot-card:active{border-color:var(--accent);background:var(--accent-l)}
-.lot-card.selected{border-color:var(--accent);background:var(--accent-l)}
-.lot-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.lot-price{font-family:'DM Mono',monospace;font-size:18px;font-weight:500}
-.lot-badge{background:var(--green-l);color:var(--green);font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;font-family:'DM Mono',monospace}
-.lot-card-row{display:flex;gap:16px}
-.lot-stat{flex:1}
-.lot-stat-label{font-size:11px;color:var(--text2);font-weight:600;letter-spacing:.3px}
-.lot-stat-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;margin-top:2px}
-.lot-empty{padding:30px 20px;text-align:center;color:var(--text2);font-size:13px}
-.out-form{padding:14px;border-top:1px solid var(--border)}
-.out-form-title{font-size:12px;color:var(--text2);font-weight:600;margin-bottom:10px;letter-spacing:.3px}
-.out-qty-wrap{display:flex;gap:8px;margin-bottom:10px}
-.out-qty-wrap input{flex:1;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:12px 14px;border-radius:var(--r-sm);font-size:20px;font-family:'DM Mono',monospace;font-weight:500;outline:none;-webkit-appearance:none;text-align:center}
-.out-qty-wrap input:focus{border-color:var(--accent)}
-.out-date-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.out-date-row label{font-size:12px;color:var(--text2);font-weight:600;flex-shrink:0}
-.out-date-row input{flex:1;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:8px 10px;border-radius:var(--r-sm);font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none}
-.out-date-row input:focus{border-color:var(--accent)}
-.warn-box{background:var(--orange-l);border:1px solid var(--orange);border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--orange);font-weight:600;margin-bottom:10px;display:none;align-items:center;gap:6px}
-.warn-box.show{display:flex}
-.btn-full{width:100%;padding:13px;border-radius:var(--r-sm);border:none;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:all .15s}
-.btn-full:active{transform:scale(.98)}
-.btn-out{background:var(--red);color:#fff;margin-bottom:8px}
-.btn-cancel{background:var(--surface2);color:var(--text2);border:1.5px solid var(--border)}
+.sheet-handle{
+  width:40px;height:4px;background:var(--border2);
+  border-radius:2px;margin:14px auto 0;
+}
+.sheet-header{
+  padding:16px 18px 14px;
+  border-bottom:1.5px solid var(--border);
+}
+.sheet-title{
+  font-family:'Outfit',sans-serif;
+  font-weight:700;font-size:19px;letter-spacing:-.3px;
+}
+.sheet-sub{font-size:12px;color:var(--text2);margin-top:3px;font-weight:500}
 
-/* 履歴 */
-.date-row{display:flex;gap:8px;margin-bottom:12px;align-items:center}
-.date-row input{flex:1;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:9px 12px;border-radius:var(--r);font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none}
+/* ロットカード */
+.lot-list{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.lot-card{
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:14px 16px;cursor:pointer;
+  transition:all .15s;box-shadow:var(--shadow-sm);
+}
+.lot-card:active{border-color:var(--accent);background:var(--accent-l)}
+.lot-card.selected{border-color:var(--accent);background:var(--accent-l);box-shadow:0 0 0 3px rgba(26,107,255,.1)}
+.lot-card-top{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+}
+.lot-price{
+  font-family:'JetBrains Mono',monospace;
+  font-size:20px;font-weight:600;color:var(--text);
+}
+.lot-price span{font-size:12px;color:var(--text2);font-weight:500;font-family:'Noto Sans JP',sans-serif}
+.lot-badge{
+  background:var(--green-l);color:var(--green);
+  font-size:13px;font-weight:700;padding:4px 10px;
+  border-radius:var(--r-xs);
+  font-family:'JetBrains Mono',monospace;
+}
+.lot-card-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lot-stat-label{
+  font-size:10px;color:var(--text2);font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px;
+}
+.lot-stat-val{
+  font-family:'JetBrains Mono',monospace;
+  font-size:16px;font-weight:600;
+}
+.lot-empty{padding:32px 20px;text-align:center;color:var(--text2);font-size:14px}
+
+/* 出庫フォーム */
+.out-form{padding:0 16px 16px;border-top:1.5px solid var(--border);padding-top:14px}
+.out-form-title{
+  font-size:11px;color:var(--text2);font-weight:700;
+  margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase;
+}
+.out-qty-wrap{display:flex;gap:8px;margin-bottom:10px}
+.out-qty-wrap input{
+  flex:1;background:var(--surface2);border:1.5px solid var(--border);
+  color:var(--text);padding:14px;border-radius:var(--r-sm);
+  font-size:28px;font-family:'JetBrains Mono',monospace;font-weight:600;
+  outline:none;-webkit-appearance:none;text-align:center;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.06);
+}
+.out-qty-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,107,255,.1)}
+.out-date-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.out-date-row label{
+  font-size:12px;color:var(--text2);font-weight:700;flex-shrink:0;letter-spacing:.2px;
+}
+.out-date-row input{
+  flex:1;background:var(--surface2);border:1.5px solid var(--border);
+  color:var(--text);padding:9px 12px;border-radius:var(--r-sm);
+  font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;
+}
+.out-date-row input:focus{border-color:var(--accent)}
+.warn-box{
+  background:var(--orange-l);border:1.5px solid var(--orange);
+  border-radius:var(--r-sm);padding:10px 14px;
+  font-size:12px;color:var(--orange);font-weight:700;
+  margin-bottom:12px;display:none;align-items:center;gap:8px;
+}
+.warn-box.show{display:flex}
+.btn-full{
+  width:100%;padding:14px;border-radius:var(--r-sm);border:none;
+  font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:15px;
+  cursor:pointer;transition:all .15s;letter-spacing:.2px;
+}
+.btn-full:active{transform:scale(.98)}
+.btn-out{
+  background:var(--red);color:#fff;margin-bottom:8px;
+  box-shadow:0 2px 8px rgba(220,38,38,.25);
+}
+.btn-cancel{
+  background:var(--surface2);color:var(--text2);
+  border:1.5px solid var(--border);
+}
+
+/* 確認モーダル */
+.confirm-card{
+  margin:12px 16px 0;
+  background:var(--surface2);border-radius:var(--r);
+  overflow:hidden;border:1.5px solid var(--border);
+}
+.confirm-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:13px 16px;border-bottom:1px solid var(--border);
+}
+.confirm-row:last-child{border-bottom:none}
+.confirm-label{font-size:13px;color:var(--text2);font-weight:600}
+.confirm-val{
+  font-family:'JetBrains Mono',monospace;
+  font-size:18px;font-weight:600;
+}
+.confirm-btns{padding:14px 16px 0;display:flex;flex-direction:column;gap:8px}
+
+/* ── 履歴 ── */
+.date-row{display:flex;gap:8px;margin-bottom:14px;align-items:center}
+.date-row input{
+  flex:1;background:var(--surface);border:1.5px solid var(--border);
+  color:var(--text);padding:10px 14px;border-radius:var(--r);
+  font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;
+  box-shadow:var(--shadow-sm);font-weight:500;
+}
 .date-row input:focus{border-color:var(--accent)}
-.today-btn{background:var(--surface);border:1.5px solid var(--border);color:var(--text2);padding:9px 12px;border-radius:var(--r);font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
-.hist-list{display:flex;flex-direction:column;gap:6px}
-.hist-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)}
-.hist-badge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;flex-shrink:0}
+.today-btn{
+  background:var(--surface);border:1.5px solid var(--border);
+  color:var(--text2);padding:10px 14px;border-radius:var(--r);
+  font-family:'Noto Sans JP',sans-serif;font-size:13px;
+  font-weight:700;cursor:pointer;white-space:nowrap;
+  box-shadow:var(--shadow-sm);
+}
+.hist-list{display:flex;flex-direction:column;gap:8px}
+.hist-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:13px 16px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:var(--shadow);
+}
+.hist-badge{
+  padding:4px 10px;border-radius:var(--r-xs);
+  font-size:11px;font-weight:700;flex-shrink:0;letter-spacing:.3px;
+}
 .hist-badge.in{background:var(--green-l);color:var(--green)}
 .hist-badge.out{background:var(--red-l);color:var(--red)}
 .hist-info{flex:1;min-width:0}
-.hist-name{font-weight:700;font-size:14px}
-.hist-meta{font-size:12px;color:var(--text2);margin-top:2px}
-.hist-amt{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;text-align:right;flex-shrink:0}
-.hist-empty{text-align:center;padding:50px 20px;color:var(--text2)}
-.hist-empty .e-icon{font-size:40px;margin-bottom:8px}
+.hist-name{
+  font-family:'Outfit',sans-serif;
+  font-weight:600;font-size:14px;letter-spacing:-.1px;
+}
+.hist-meta{font-size:12px;color:var(--text2);margin-top:3px;font-weight:500}
+.hist-amt{
+  font-family:'JetBrains Mono',monospace;
+  font-size:15px;font-weight:600;text-align:right;flex-shrink:0;
+}
+.hist-empty{
+  text-align:center;padding:60px 20px;color:var(--text2);
+}
+.hist-empty .e-icon{font-size:44px;margin-bottom:10px;display:block}
+.hist-empty p{font-size:14px;font-weight:500}
 
-/* 設定 */
+/* ── 設定 ── */
 .settings-page{display:none}
-.settings-page.active{display:block;padding:14px}
-.settings-back{display:flex;align-items:center;gap:10px;margin-bottom:20px}
-.back-btn{background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--r-sm);font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
-.settings-title{font-weight:700;font-size:17px}
-.set-section{margin-bottom:20px}
-.set-label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
-.opening-row{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)}
-.opening-name{flex:1;font-size:14px;font-weight:600}
-.opening-input{width:72px;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:7px 8px;border-radius:8px;font-size:14px;font-family:'DM Mono',monospace;font-weight:500;text-align:center;outline:none}
+.settings-page.active{display:block;padding:16px}
+.settings-back{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.back-btn{
+  background:var(--surface);border:1.5px solid var(--border);
+  color:var(--text);padding:9px 14px;border-radius:var(--r-sm);
+  font-family:'Noto Sans JP',sans-serif;font-size:13px;
+  font-weight:700;cursor:pointer;box-shadow:var(--shadow-sm);
+}
+.settings-title{
+  font-family:'Outfit',sans-serif;
+  font-weight:700;font-size:19px;letter-spacing:-.2px;
+}
+.set-section{margin-bottom:24px}
+.set-label{
+  font-size:11px;font-weight:700;color:var(--text2);
+  letter-spacing:.8px;text-transform:uppercase;
+  margin-bottom:10px;
+}
+.opening-row{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:12px 16px;
+  margin-bottom:7px;display:flex;align-items:center;gap:10px;
+  box-shadow:var(--shadow-sm);
+}
+.opening-name{
+  flex:1;font-size:14px;font-weight:600;
+  font-family:'Outfit',sans-serif;letter-spacing:-.1px;
+}
+.opening-input{
+  width:76px;background:var(--surface2);border:1.5px solid var(--border);
+  color:var(--text);padding:8px;border-radius:var(--r-sm);
+  font-size:15px;font-family:'JetBrains Mono',monospace;
+  font-weight:600;text-align:center;outline:none;
+}
 .opening-input:focus{border-color:var(--accent)}
-.opening-unit{font-size:12px;color:var(--text3);width:22px}
-.set-input{width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:11px 14px;border-radius:var(--r);font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;margin-bottom:8px}
+.opening-unit{font-size:12px;color:var(--text3);width:24px;font-weight:600}
+.set-input{
+  width:100%;background:var(--surface);border:1.5px solid var(--border);
+  color:var(--text);padding:12px 14px;border-radius:var(--r);
+  font-size:14px;font-family:'Noto Sans JP',sans-serif;
+  outline:none;margin-bottom:8px;box-shadow:var(--shadow-sm);
+  font-weight:500;
+}
 .set-input:focus{border-color:var(--accent)}
+.set-fix-btn{
+  width:100%;padding:13px;border-radius:var(--r-sm);border:none;
+  background:var(--orange);color:#fff;
+  font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:14px;
+  cursor:pointer;margin-top:6px;letter-spacing:.2px;
+  box-shadow:0 2px 8px rgba(217,119,6,.2);
+}
+.set-fix-result{
+  display:none;margin-top:8px;
+  background:var(--green-l);border:1.5px solid rgba(5,150,105,.2);
+  border-radius:var(--r-sm);padding:10px 14px;
+  font-size:13px;color:var(--green);font-weight:700;
+}
 
-/* 新商品 */
-.np-form-group{margin-bottom:12px}
-.np-label{font-size:12px;color:var(--text2);font-weight:600;display:block;margin-bottom:5px;letter-spacing:.3px}
-.np-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:11px 14px;border-radius:var(--r-sm);font-size:15px;font-family:'Noto Sans JP',sans-serif;outline:none}
+/* ── 新商品 ── */
+.np-form-group{margin-bottom:14px;padding:0 16px}
+.np-label{
+  font-size:11px;color:var(--text2);font-weight:700;
+  display:block;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase;
+}
+.np-input{
+  width:100%;background:var(--surface2);border:1.5px solid var(--border);
+  color:var(--text);padding:12px 14px;border-radius:var(--r-sm);
+  font-size:15px;font-family:'Noto Sans JP',sans-serif;
+  outline:none;font-weight:500;
+}
 .np-input:focus{border-color:var(--accent)}
 
-/* SETUP */
-.setup-wrap{padding:20px}
-.setup-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
-.setup-fish{font-size:40px;margin-bottom:10px}
-.setup-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent);margin-bottom:4px}
-.setup-desc{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5}
-.setup-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:11px 14px;border-radius:var(--r-sm);font-size:13px;font-family:monospace;outline:none;margin-bottom:10px}
+/* ── SETUP ── */
+.setup-wrap{
+  min-height:100vh;display:flex;align-items:center;
+  justify-content:center;padding:24px;
+}
+.setup-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:24px;padding:28px 24px;
+  box-shadow:var(--shadow-lg);width:100%;max-width:400px;
+}
+.setup-logo{
+  width:60px;height:60px;border-radius:18px;
+  background:linear-gradient(135deg,#1A6BFF,#0A4ED6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;margin-bottom:16px;
+  box-shadow:0 4px 16px rgba(26,107,255,.3);
+}
+.setup-title{
+  font-family:'Outfit',sans-serif;
+  font-size:24px;font-weight:700;color:var(--text);
+  margin-bottom:4px;letter-spacing:-.4px;
+}
+.setup-desc{
+  font-size:13px;color:var(--text2);margin-bottom:22px;
+  line-height:1.6;font-weight:500;
+}
+.setup-label{
+  font-size:11px;font-weight:700;color:var(--text2);
+  display:block;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase;
+}
+.setup-input{
+  width:100%;background:var(--surface2);border:1.5px solid var(--border);
+  color:var(--text);padding:12px 14px;border-radius:var(--r-sm);
+  font-size:13px;font-family:monospace;outline:none;margin-bottom:12px;
+  font-weight:500;
+}
 .setup-input:focus{border-color:var(--accent)}
-.setup-btn{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:15px;cursor:pointer}
+.setup-btn{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-d));
+  color:#fff;border:none;border-radius:var(--r-sm);
+  font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:15px;
+  cursor:pointer;box-shadow:0 4px 16px rgba(26,107,255,.3);
+  letter-spacing:.2px;
+}
 
-/* TOAST */
-.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--text);color:#fff;padding:9px 18px;border-radius:100px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:400;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+/* ── BUTTONS ── */
+.btn-sm{
+  padding:7px 12px;border-radius:var(--r-sm);
+  border:1.5px solid var(--border);
+  background:var(--surface);color:var(--text2);
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:12px;font-weight:700;cursor:pointer;
+  box-shadow:var(--shadow-sm);
+}
+.btn-sm.accent{background:var(--accent);color:#fff;border-color:transparent}
+.btn-sm.danger{background:var(--red);color:#fff;border-color:transparent}
+.btn-sm.green{background:var(--green);color:#fff;border-color:transparent}
+.mt8{margin-top:8px}
+.add-prod-btn{
+  background:var(--accent-l);border:1.5px solid rgba(26,107,255,.2);
+  color:var(--accent);padding:7px 12px;border-radius:var(--r-sm);
+  font-family:'Noto Sans JP',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;letter-spacing:.2px;
+}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;top:76px;left:50%;
+  transform:translateX(-50%) translateY(-8px);
+  background:var(--text);color:#fff;
+  padding:10px 20px;border-radius:100px;
+  font-size:13px;font-weight:700;
+  opacity:0;transition:all .25s;pointer-events:none;
+  white-space:nowrap;z-index:400;
+  box-shadow:0 4px 20px rgba(0,0,0,.2);
+  letter-spacing:.2px;
+}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{background:var(--green)}
 .toast.err{background:var(--red)}
 .toast.warn{background:var(--orange)}
 
-/* LOADING */
-.loading{display:flex;flex-direction:column;align-items:center;padding:60px 20px;gap:12px;color:var(--text2)}
-.spin{width:32px;height:32px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+/* ── LOADING ── */
+.loading{
+  display:flex;flex-direction:column;align-items:center;
+  padding:60px 20px;gap:14px;color:var(--text3);
+}
+.spin{
+  width:32px;height:32px;
+  border:2.5px solid var(--border2);
+  border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* BUTTONS */
-.btn-sm{padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text2);font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
-.btn-sm.accent{background:var(--accent);color:#fff;border-color:transparent}
-.btn-sm.danger{background:var(--red);color:#fff;border-color:transparent}
-.btn-sm.green{background:var(--green);color:#fff;border-color:transparent}
-.mt8{margin-top:8px}
-.add-prod-btn{background:var(--accent-l);border:1.5px solid rgba(0,102,255,.2);color:var(--accent);padding:7px 12px;border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+/* ── NO STOCK ── */
+.no-stock-msg{
+  text-align:center;padding:60px 20px;color:var(--text2);
+}
+.no-stock-msg .e-icon{font-size:44px;margin-bottom:10px;display:block}
+.no-stock-msg p{font-size:14px;font-weight:500}
 </style>
 </head>
 <body>
@@ -284,11 +722,12 @@ body{padding-bottom:80px}
 <!-- SETUP -->
 <div id="setupPage" class="setup-wrap">
   <div class="setup-card">
-    <div class="setup-fish">🐟</div>
+    <div class="setup-logo">🐟</div>
     <div class="setup-title">鮮魚在庫管理</div>
     <div class="setup-desc">Google Apps ScriptのデプロイURLを入力して接続してください</div>
+    <label class="setup-label">Apps Script URL</label>
     <input class="setup-input" id="setupUrl" type="url" placeholder="https://script.google.com/macros/s/..." />
-    <button class="setup-btn" onclick="connect()">接続する</button>
+    <button class="setup-btn" onclick="connect()">接続する →</button>
   </div>
 </div>
 
@@ -296,7 +735,7 @@ body{padding-bottom:80px}
 <div id="mainWrap" style="display:none">
   <div class="header">
     <div class="header-left">
-      <span class="header-fish">🐟</span>
+      <div class="header-logo">🐟</div>
       <div>
         <div class="header-title">鮮魚在庫管理</div>
         <div class="header-date" id="hDate"></div>
@@ -311,7 +750,7 @@ body{padding-bottom:80px}
     <div class="tab" onclick="goTab('hist')"><span class="tab-icon">📋</span>履歴</div>
   </div>
 
-  <!-- TAB: 出庫 — tồn > 0 mới hiện -->
+  <!-- TAB: 出庫 -->
   <div class="page active" id="page-out">
     <div class="search-wrap">
       <span class="si">🔍</span>
@@ -319,27 +758,14 @@ body{padding-bottom:80px}
     </div>
     <div class="sec-label">
       <span id="outLabelText">商品一覧</span>
-      <button class="btn-sm" id="checkBtn" onclick="toggleCheck()" style="font-size:12px">⚠️ 在庫チェック</button>
+      <button class="check-btn" id="checkBtn" onclick="toggleCheck()">⚠️ 在庫チェック</button>
     </div>
-    <!-- 在庫チェックパネル -->
-    <div id="checkPanel" style="display:none;margin-bottom:12px">
-      <div style="background:var(--orange-l);border:1.5px solid var(--orange);border-radius:var(--r);padding:12px 14px;margin-bottom:8px">
-        <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:10px;letter-spacing:.3px">⚠️ 要確認 — 在庫0以下の商品</div>
-        <div id="checkList"></div>
-      </div>
-    </div>
+    <div id="checkPanel" style="display:none;margin-bottom:14px"></div>
     <div class="stock-list" id="stockList"><div class="loading"><div class="spin"></div>読み込み中...</div></div>
   </div>
 
   <!-- TAB: 入庫 -->
   <div class="page" id="page-in">
-    <div class="cart-detail" id="cartDetail">
-      <div class="cart-dh">
-        <span id="cartDHTitle">入庫リスト</span>
-        <button class="btn-sm danger" onclick="clearCart()">クリア</button>
-      </div>
-      <div id="cartItems"></div>
-    </div>
     <div class="search-wrap">
       <span class="si">🔍</span>
       <input type="text" placeholder="商品名で検索..." oninput="filterIn()" id="inSearch" />
@@ -349,15 +775,6 @@ body{padding-bottom:80px}
       <button class="add-prod-btn" onclick="openNP()">＋ 新商品</button>
     </div>
     <div class="product-list" id="productList"><div class="loading"><div class="spin"></div>読み込み中...</div></div>
-    <div class="cart-sticky" id="cartSticky" style="display:none">
-      <div class="cart-bar" onclick="toggleCart()">
-        <div class="cart-bar-info">
-          <div class="cart-bar-title">🛒 <span id="cartCount">0件</span> カート中</div>
-          <div class="cart-bar-sub" id="cartTotal">合計 ¥0</div>
-        </div>
-        <button class="cart-submit" onclick="event.stopPropagation();submitIn()">入庫登録 →</button>
-      </div>
-    </div>
   </div>
 
   <!-- TAB: 履歴 -->
@@ -379,9 +796,9 @@ body{padding-bottom:80px}
   <div class="set-section">
     <div class="set-label">期首在庫</div>
     <div id="openingList"><div class="loading"><div class="spin"></div></div></div>
-    <button class="btn-full btn-out mt8" style="background:var(--green);margin-top:10px" onclick="saveOpening()">💾 期首在庫を保存</button>
-    <button class="btn-full mt8" style="background:var(--orange);color:#fff;width:100%;padding:13px;border-radius:var(--r-sm);border:none;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:15px;cursor:pointer;margin-top:8px" onclick="fixNegativeStock()">🔧 マイナス在庫を0に修正</button>
-    <div id="fixResult" style="display:none;margin-top:8px;background:var(--green-l);border:1px solid var(--green);border-radius:var(--r-sm);padding:10px 12px;font-size:13px;color:var(--green);font-weight:600"></div>
+    <button class="btn-full btn-out mt8" style="background:var(--green);box-shadow:0 2px 8px rgba(5,150,105,.25);width:100%;padding:13px;border-radius:var(--r-sm);border:none;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:14px;cursor:pointer;margin-top:10px;color:#fff" onclick="saveOpening()">💾 期首在庫を保存</button>
+    <button class="set-fix-btn" onclick="fixNegativeStock()">🔧 マイナス在庫を0に修正</button>
+    <div class="set-fix-result" id="fixResult"></div>
   </div>
   <div class="set-section">
     <div class="set-label">API設定</div>
@@ -408,9 +825,37 @@ body{padding-bottom:80px}
         <label>出庫日</label>
         <input type="date" id="outDate" />
       </div>
-      <div class="warn-box" id="warnBox">⚠️ 在庫不足です。マイナスになります。</div>
-      <button class="btn-full btn-out" onclick="submitOut()">📤 出庫する</button>
+      <div class="warn-box" id="warnBox">⚠️ 在庫不足！マイナスになります</div>
+      <button class="btn-full btn-out" onclick="submitOut()">確認画面へ →</button>
       <button class="btn-full btn-cancel mt8" onclick="closeOut()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- 出庫確認 MODAL -->
+<div class="overlay" id="confirmOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="cfTitle">出庫確認</div>
+      <div class="sheet-sub">内容を確認して出庫してください</div>
+    </div>
+    <div class="confirm-card">
+      <div class="confirm-row">
+        <span class="confirm-label">出庫数量</span>
+        <span class="confirm-val" id="cfQty" style="color:var(--red)">—</span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-label">出庫後の残高</span>
+        <span class="confirm-val" id="cfRemain">—</span>
+      </div>
+    </div>
+    <div id="cfWarn" style="display:none;margin:10px 16px 0;background:var(--orange-l);border:1.5px solid var(--orange);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;color:var(--orange);font-weight:700;text-align:center">
+      ⚠️ 出庫後に残高がマイナスになります！
+    </div>
+    <div class="confirm-btns">
+      <button class="btn-full btn-out" id="cfBtn" onclick="confirmOut()">📤 出庫確定</button>
+      <button class="btn-full btn-cancel" onclick="document.getElementById('confirmOverlay').classList.remove('open')">キャンセル</button>
     </div>
   </div>
 </div>
@@ -423,7 +868,7 @@ body{padding-bottom:80px}
       <div class="sheet-title">新商品を追加</div>
       <div class="sheet-sub">商品マスターに登録します</div>
     </div>
-    <div style="padding:14px">
+    <div style="padding:16px 0 0">
       <div class="np-form-group">
         <label class="np-label">商品名</label>
         <input class="np-input" type="text" id="npName" placeholder="例: ヒラメ" />
@@ -432,8 +877,10 @@ body{padding-bottom:80px}
         <label class="np-label">規格（単位）</label>
         <input class="np-input" type="text" id="npUnit" placeholder="例: 箱, kg, 本..." />
       </div>
-      <button class="btn-full btn-out mt8" style="background:var(--accent)" onclick="submitNP()">✅ 追加する</button>
-      <button class="btn-full btn-cancel mt8" onclick="closeNP()">キャンセル</button>
+      <div style="padding:0 16px">
+        <button class="btn-full btn-out mt8" style="background:var(--accent);box-shadow:0 2px 8px rgba(26,107,255,.25)" onclick="submitNP()">✅ 追加する</button>
+        <button class="btn-full btn-cancel mt8" onclick="closeNP()">キャンセル</button>
+      </div>
     </div>
   </div>
 </div>
@@ -441,6 +888,7 @@ body{padding-bottom:80px}
 <div class="toast" id="toast"></div>
 
 <script>
+
 // ============================================================
 // STATE
 // ============================================================
@@ -965,15 +1413,12 @@ function toggleCheck() {
   const panel = document.getElementById('checkPanel');
   const btn = document.getElementById('checkBtn');
   panel.style.display = checkOpen ? 'block' : 'none';
-  btn.style.background = checkOpen ? 'var(--orange)' : '';
-  btn.style.color = checkOpen ? '#fff' : '';
-  btn.style.borderColor = checkOpen ? 'transparent' : '';
+  btn.classList.toggle('active', checkOpen);
   if (checkOpen) renderCheckList();
 }
 
 function renderCheckList() {
-  const el = document.getElementById('checkList');
-  // 在庫0以下の商品
+  const panel = document.getElementById('checkPanel');
   const problems = stock.filter(s => {
     const totalIn = (s.openingQty || 0) + (s.inQty || 0);
     const totalOut = s.outQty || 0;
@@ -981,23 +1426,25 @@ function renderCheckList() {
   });
 
   if (!problems.length) {
-    el.innerHTML = '<div style="text-align:center;color:var(--green);font-size:13px;font-weight:600;padding:8px">✅ 問題なし！全商品の在庫は正常です</div>';
+    panel.innerHTML = `<div class="check-panel"><div class="check-panel-header">⚠️ 要確認 — 在庫0以下の商品</div><div style="padding:20px;text-align:center;color:var(--green);font-size:14px;font-weight:700">✅ 問題なし！全商品の在庫は正常です</div></div>`;
     return;
   }
 
-  el.innerHTML = problems.map(s => {
+  const items = problems.map(s => {
     const qty = fn((s.openingQty||0) + (s.inQty||0) - (s.outQty||0));
     const isNeg = qty < 0;
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(217,119,6,.2)">
+    return `<div class="check-item">
       <div>
-        <div style="font-weight:700;font-size:14px">${emo(s.name)} ${s.name}</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:2px">${isNeg ? '⛔ 在庫マイナス' : '⚠️ 在庫ゼロ'}</div>
+        <div class="check-item-name">${emo(s.name)} ${s.name}</div>
+        <div class="check-item-tag">${isNeg ? '⛔ 在庫マイナス' : '⚠️ 在庫ゼロ'}</div>
       </div>
-      <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:${isNeg ? 'var(--red)' : 'var(--orange)'}">
+      <div class="check-item-qty" style="color:${isNeg ? 'var(--red)' : 'var(--orange)'}">
         ${qty} ${s.unit}
       </div>
     </div>`;
   }).join('');
+
+  panel.innerHTML = `<div class="check-panel"><div class="check-panel-header">⚠️ 要確認 — 在庫0以下の商品（${problems.length}件）</div>${items}</div>`;
 }
 
 async function fixNegativeStock() {
@@ -1071,34 +1518,7 @@ function emo(name) {
   for(const[k,v] of Object.entries(m)){if(name.includes(k))return v}
   return '🐠';
 }
-</script>
 
-<!-- 出庫確認 MODAL -->
-<div class="overlay" id="confirmOverlay">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-header">
-      <div class="sheet-title" id="cfTitle">出庫確認</div>
-      <div class="sheet-sub">以下の内容で出庫しますか？</div>
-    </div>
-    <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
-      <div style="background:var(--surface2);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;color:var(--text2);font-weight:600">出庫数量</span>
-          <span style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--red)" id="cfQty">—</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)">
-          <span style="font-size:13px;color:var(--text2);font-weight:600">出庫後の残高</span>
-          <span style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700" id="cfRemain">—</span>
-        </div>
-      </div>
-      <div id="cfWarn" style="display:none;background:var(--orange-l);border:1px solid var(--orange);border-radius:var(--r-sm);padding:10px 12px;font-size:13px;color:var(--orange);font-weight:600;text-align:center">
-        ⚠️ 出庫後に残高がマイナスになります！
-      </div>
-      <button class="btn-full btn-out" id="cfBtn" onclick="confirmOut()">📤 出庫確定</button>
-      <button class="btn-full btn-cancel mt8" onclick="document.getElementById('confirmOverlay').classList.remove('open')">キャンセル</button>
-    </div>
-  </div>
-</div>
+</script>
 </body>
 </html>
