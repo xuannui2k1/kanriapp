@@ -1646,8 +1646,8 @@ function renderSummary() {
   const sign = monthTotal >= 0 ? '+' : '';
   const headerLabel = isTotal ? '全期間 入出庫金額合計' : `${selMonth} 入出庫金額`;
   const headerSub = isTotal
-    ? `入庫累計 +¥${positiveTotal.toLocaleString()} ／ 出庫累計 -¥${Math.abs(negativeTotal).toLocaleString()}`
-    : `入庫 +¥${positiveTotal.toLocaleString()} ／ 出庫 -¥${Math.abs(negativeTotal).toLocaleString()}`;
+    ? `入庫累計 +¥${fmtYen(positiveTotal)} ／ 出庫累計 -¥${fmtYen(negativeTotal)}`
+    : `入庫 +¥${fmtYen(positiveTotal)} ／ 出庫 -¥${fmtYen(negativeTotal)}`;
 
   // 合計モードは全商品表示（棚卸し用）
   const allItems = isTotal
@@ -1658,7 +1658,7 @@ function renderSummary() {
   el.innerHTML = `
     <div class="summary-total-card">
       <div class="summary-total-label">${headerLabel}</div>
-      <div class="summary-total-value">${sign}¥${Math.abs(monthTotal).toLocaleString()}</div>
+      <div class="summary-total-value">${sign}¥${fmtYen(monthTotal)}</div>
       <div class="summary-total-sub">${headerSub}</div>
     </div>
     ${isTotal ? `
@@ -1667,11 +1667,11 @@ function renderSummary() {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div style="background:var(--green-l);border:1px solid rgba(5,150,105,.2);border-radius:var(--r-sm);padding:10px;text-align:center">
           <div style="font-size:11px;color:var(--green);font-weight:700">入庫累計</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--green);margin-top:4px">+¥${positiveTotal.toLocaleString()}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--green);margin-top:4px">+¥${fmtYen(positiveTotal)}</div>
         </div>
         <div style="background:var(--red-l);border:1px solid rgba(220,38,38,.2);border-radius:var(--r-sm);padding:10px;text-align:center">
           <div style="font-size:11px;color:var(--red);font-weight:700">出庫累計</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--red);margin-top:4px">-¥${Math.abs(negativeTotal).toLocaleString()}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--red);margin-top:4px">-¥${fmtYen(negativeTotal)}</div>
         </div>
       </div>
     </div>` : ''}
@@ -1689,7 +1689,7 @@ function renderSummary() {
             <div class="summary-code">#${item.code}</div>
           </div>
           <div class="summary-amount" style="color:${color}">
-            ${isZero ? '¥0' : s+'¥'+Math.abs(item.amount).toLocaleString()}
+            ${isZero ? '¥0' : s+'¥'+fmtYen(item.amount)}
           </div>
         </div>`;
       }).join('')}
@@ -1716,6 +1716,12 @@ function fd(d) {
 function fn(n) {
   if(n===undefined||n===null) return 0;
   return Math.round(n*100)/100;
+}
+
+// 金額フォーマット（カンマ区切り、小数点なし）
+function fmtYen(n) {
+  const abs = Math.abs(Math.round(n));
+  return abs.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 function emo(name) {
   const m={'むつ':'🐟','クエ':'🐡','マグロ':'🐠','イカ':'🦑','タコ':'🐙','サバ':'🐟','アナゴ':'🐍','カマス':'🐟','カニ':'🦀','ホタテ':'🐚','サワラ':'🐟','ホタル':'🦑','送料':'📦','包材':'📦','ヒラ':'🐟','タイ':'🐠','ブリ':'🐟'};
