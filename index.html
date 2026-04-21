@@ -679,6 +679,69 @@ body{padding-bottom:90px}
   cursor:pointer;letter-spacing:.2px;
 }
 
+/* ── 集計タブ ── */
+.summary-month-selector{
+  display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;
+  margin-bottom:14px;scrollbar-width:none;
+}
+.summary-month-selector::-webkit-scrollbar{display:none}
+.month-chip{
+  flex-shrink:0;padding:8px 14px;border-radius:100px;
+  border:1.5px solid var(--border);background:var(--surface);
+  font-size:13px;font-weight:700;cursor:pointer;
+  transition:all .15s;color:var(--text2);
+  box-shadow:var(--shadow-sm);white-space:nowrap;
+}
+.month-chip.active{
+  background:var(--accent);color:#fff;
+  border-color:transparent;
+  box-shadow:0 2px 8px rgba(26,107,255,.3);
+}
+.month-chip:active{transform:scale(.95)}
+
+.summary-total-card{
+  background:linear-gradient(135deg,var(--accent),var(--accent-d));
+  border-radius:var(--r);padding:16px 18px;
+  margin-bottom:14px;color:#fff;
+  box-shadow:0 4px 16px rgba(26,107,255,.3);
+}
+.summary-total-label{font-size:12px;opacity:.8;font-weight:600;letter-spacing:.3px}
+.summary-total-value{
+  font-family:'JetBrains Mono',monospace;
+  font-size:28px;font-weight:700;margin-top:4px;letter-spacing:-.5px;
+}
+.summary-total-sub{font-size:12px;opacity:.7;margin-top:4px;font-weight:500}
+
+.summary-list{display:flex;flex-direction:column;gap:8px}
+.summary-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:14px 16px;
+  box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:12px;
+}
+.summary-card.positive{border-left:4px solid var(--green)}
+.summary-card.negative{border-left:4px solid var(--red)}
+.summary-card.zero{border-left:4px solid var(--border2)}
+.summary-fish{
+  width:40px;height:40px;border-radius:12px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.summary-info{flex:1;min-width:0}
+.summary-name{
+  font-family:'Outfit',sans-serif;
+  font-weight:600;font-size:14px;letter-spacing:-.1px;
+}
+.summary-code{font-size:11px;color:var(--text3);margin-top:2px;font-weight:600}
+.summary-amount{
+  font-family:'JetBrains Mono',monospace;
+  font-size:16px;font-weight:600;text-align:right;flex-shrink:0;
+}
+.summary-empty{
+  text-align:center;padding:60px 20px;color:var(--text2);
+}
+
 /* ── TOAST ── */
 .toast{
   position:fixed;top:76px;left:50%;
@@ -748,6 +811,7 @@ body{padding-bottom:90px}
     <div class="tab active" onclick="goTab('out')"><span class="tab-icon">📦</span>出庫</div>
     <div class="tab" onclick="goTab('in')"><span class="tab-icon">🚢</span>入庫</div>
     <div class="tab" onclick="goTab('hist')"><span class="tab-icon">📋</span>履歴</div>
+    <div class="tab" onclick="goTab('sum')"><span class="tab-icon">📊</span>集計</div>
   </div>
 
   <!-- TAB: 出庫 -->
@@ -775,6 +839,16 @@ body{padding-bottom:90px}
       <button class="add-prod-btn" onclick="openNP()">＋ 新商品</button>
     </div>
     <div class="product-list" id="productList"><div class="loading"><div class="spin"></div>読み込み中...</div></div>
+  </div>
+
+  <!-- TAB: 集計 -->
+  <div class="page" id="page-sum">
+    <div class="summary-month-selector" id="monthSelector">
+      <div class="loading"><div class="spin"></div></div>
+    </div>
+    <div id="summaryContent">
+      <div class="loading"><div class="spin"></div>読み込み中...</div>
+    </div>
   </div>
 
   <!-- TAB: 履歴 -->
@@ -1493,13 +1567,116 @@ async function fixNegativeStock() {
   }
 }
 
+// ============================================================
+// 集計タブ
+// ============================================================
+let summaryData = null;
+let selMonth = null;
+
+async function loadSummary() {
+  const selector = document.getElementById('monthSelector');
+  const content = document.getElementById('summaryContent');
+  selector.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  content.innerHTML = '<div class="loading"><div class="spin"></div>読み込み中...</div>';
+
+  try {
+    const d = await GET('getSummary');
+    if (d.error) throw new Error(d.error);
+    summaryData = d;
+
+    // 月チップを作成（データがある月のみ）
+    const activeMonths = d.months.filter(m => 
+      d.items.some(item => item.months[m] !== 0)
+    );
+
+    if (!activeMonths.length) {
+      selector.innerHTML = '';
+      content.innerHTML = '<div class="summary-empty">データがありません</div>';
+      return;
+    }
+
+    // デフォルト: 最後のデータがある月
+    selMonth = activeMonths[activeMonths.length - 1];
+
+    selector.innerHTML = activeMonths.map(m =>
+      `<div class="month-chip ${m === selMonth ? 'active' : ''}" onclick="selectMonth('${m}')">${m}</div>`
+    ).join('');
+
+    renderSummary();
+  } catch(e) {
+    content.innerHTML = `<div class="summary-empty">データ取得失敗<br><small>${e.message}</small></div>`;
+  }
+}
+
+function selectMonth(month) {
+  selMonth = month;
+  document.querySelectorAll('.month-chip').forEach(c => {
+    c.classList.toggle('active', c.textContent === month);
+  });
+  renderSummary();
+}
+
+function renderSummary() {
+  if (!summaryData || !selMonth) return;
+  const content = document.getElementById('summaryContent');
+
+  const items = summaryData.items.map(item => ({
+    ...item,
+    amount: item.months[selMonth] || 0
+  })).filter(item => item.amount !== 0)
+    .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+
+  // 月合計
+  const monthTotal = items.reduce((s, i) => s + i.amount, 0);
+  const positiveTotal = items.filter(i => i.amount > 0).reduce((s, i) => s + i.amount, 0);
+  const negativeTotal = items.filter(i => i.amount < 0).reduce((s, i) => s + i.amount, 0);
+
+  if (!items.length) {
+    content.innerHTML = `<div class="summary-empty">
+      <span class="e-icon">📭</span>
+      <p>${selMonth}のデータはありません</p>
+    </div>`;
+    return;
+  }
+
+  const totalClass = monthTotal >= 0 ? 'var(--green)' : 'var(--red)';
+  const sign = monthTotal >= 0 ? '+' : '';
+
+  content.innerHTML = `
+    <div class="summary-total-card">
+      <div class="summary-total-label">${selMonth} 入出庫金額</div>
+      <div class="summary-total-value">${sign}¥${Math.abs(monthTotal).toLocaleString()}</div>
+      <div class="summary-total-sub">
+        入庫 +¥${positiveTotal.toLocaleString()} ／ 出庫 -¥${Math.abs(negativeTotal).toLocaleString()}
+      </div>
+    </div>
+    <div class="summary-list">
+      ${items.map(item => {
+        const isPos = item.amount > 0;
+        const cls = isPos ? 'positive' : 'negative';
+        const sign = isPos ? '+' : '';
+        return `<div class="summary-card ${cls}">
+          <div class="summary-fish">${emo(item.name)}</div>
+          <div class="summary-info">
+            <div class="summary-name">${item.name}</div>
+            <div class="summary-code">#${item.code} · ${isPos ? '入庫' : '出庫'}</div>
+          </div>
+          <div class="summary-amount" style="color:${isPos ? 'var(--green)' : 'var(--red)'}">
+            ${sign}¥${Math.abs(item.amount).toLocaleString()}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
 function goTab(name) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['out','in','hist'][i]===name));
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['out','in','hist','sum'][i]===name));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(`page-${name}`).classList.add('active');
   if (name === 'hist') loadHist();
-  if (name === 'in') renderProducts(stock); // 入庫タブに切り替えた時だけロット取得
-  if (name === 'out') renderStock(stock);   // 出庫タブに戻った時も再レンダリング
+  if (name === 'in') renderProducts(stock);
+  if (name === 'out') renderStock(stock);
+  if (name === 'sum') loadSummary();
 }
 function toast(msg,type='ok') {
   const t=document.getElementById('toast');
