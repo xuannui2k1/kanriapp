@@ -742,6 +742,64 @@ body{padding-bottom:90px}
   text-align:center;padding:60px 20px;color:var(--text2);
 }
 
+/* ── 入庫カート ── */
+.in-cart-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  padding:10px 16px 24px;z-index:50;
+  pointer-events:none;
+}
+.in-cart-inner{
+  background:var(--accent);color:#fff;
+  border-radius:var(--r);padding:12px 16px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 4px 24px rgba(26,107,255,.4);
+  pointer-events:all;cursor:pointer;
+  transition:all .2s;
+}
+.in-cart-inner:active{transform:scale(.98)}
+.in-cart-info{flex:1}
+.in-cart-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:15px}
+.in-cart-sub{font-size:12px;opacity:.8;margin-top:1px;font-weight:500}
+.in-cart-submit{
+  background:rgba(255,255,255,.2);color:#fff;
+  border:1.5px solid rgba(255,255,255,.4);
+  padding:9px 16px;border-radius:var(--r-sm);
+  font-family:'Noto Sans JP',sans-serif;
+  font-weight:700;font-size:13px;cursor:pointer;
+  white-space:nowrap;
+}
+.in-cart-submit:active{background:rgba(255,255,255,.3)}
+
+/* カート詳細 */
+.in-cart-detail{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r);margin-bottom:8px;overflow:hidden;
+  box-shadow:var(--shadow-lg);display:none;pointer-events:all;
+}
+.in-cart-detail.open{display:block}
+.in-cart-dh{
+  padding:10px 16px;background:var(--surface2);
+  border-bottom:1.5px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.in-cart-dh-title{font-size:13px;font-weight:700}
+.in-cart-item{
+  display:flex;align-items:center;
+  padding:10px 16px;border-bottom:1px solid var(--border);gap:10px;
+}
+.in-cart-item:last-child{border-bottom:none}
+.in-cart-item-info{flex:1}
+.in-cart-item-name{font-weight:600;font-size:13px}
+.in-cart-item-detail{font-size:12px;color:var(--text2);margin-top:2px}
+.in-cart-item-amt{
+  font-family:'JetBrains Mono',monospace;
+  font-size:14px;font-weight:600;color:var(--accent);
+}
+.in-cart-rm{
+  background:none;border:none;color:var(--red);
+  font-size:18px;cursor:pointer;padding:2px 6px;flex-shrink:0;
+}
+
 /* ── TOAST ── */
 .toast{
   position:fixed;top:76px;left:50%;
@@ -839,6 +897,24 @@ body{padding-bottom:90px}
       <button class="add-prod-btn" onclick="openNP()">＋ 新商品</button>
     </div>
     <div class="product-list" id="productList"><div class="loading"><div class="spin"></div>読み込み中...</div></div>
+  </div>
+
+  <!-- 入庫カートバー -->
+  <div class="in-cart-bar" id="inCartBar" style="display:none">
+    <div class="in-cart-detail" id="inCartDetail">
+      <div class="in-cart-dh">
+        <span class="in-cart-dh-title" id="inCartDHTitle">入庫リスト</span>
+        <button class="btn-sm danger" onclick="clearInCart()">クリア</button>
+      </div>
+      <div id="inCartItems"></div>
+    </div>
+    <div class="in-cart-inner" onclick="toggleInCart()">
+      <div class="in-cart-info">
+        <div class="in-cart-title">🛒 <span id="inCartCount">0件</span> カート中</div>
+        <div class="in-cart-sub" id="inCartTotal">合計 ¥0</div>
+      </div>
+      <button class="in-cart-submit" onclick="event.stopPropagation();submitInCart()">入庫登録 →</button>
+    </div>
   </div>
 
   <!-- TAB: 集計 -->
@@ -1268,7 +1344,7 @@ async function renderProducts(data) {
               <span id="pa_${s.code}">¥ —</span>
             </div>
             <div class="form-btns">
-              <button class="btn-add" onclick="addNewLot(${s.code},'${s.name}','${s.unit}')">＋ 入庫登録</button>
+              <button class="btn-add" onclick="addNewLot(${s.code},'${s.name}','${s.unit}')">＋ カートに追加</button>
               <button class="btn-close" onclick="toggleProd(${s.code})">閉じる</button>
             </div>
           </div>
@@ -1290,26 +1366,18 @@ function hideLotAddForm(code, idx) {
 }
 
 let isInSubmitting = false;
-async function addToLot(code, idx, unitPrice, name, unit) {
-  if (isInSubmitting) return;
+let inCart = [];
+let inCartOpen = false;
+
+function addToLot(code, idx, unitPrice, name, unit) {
   const qty = parseFloat(document.getElementById(`ilaq_${code}_${idx}`)?.value);
   const date = document.getElementById(`pd_${code}`)?.value || fd(new Date());
   if (!qty || qty <= 0) return toast('数量を入力してください','err');
-  isInSubmitting = true;
-  const btn = document.querySelector(`#ilaf_${code}_${idx} .in-lot-confirm-btn`);
-  if (btn) { btn.textContent = '送信中...'; btn.style.opacity = '0.6'; }
-  try {
-    await POST({ action:'addEntry', date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice });
-    hideLotAddForm(code, idx);
-    document.getElementById(`ilaq_${code}_${idx}`).value = '';
-    toast(`${name} ¥${unitPrice.toLocaleString()} 入庫完了 ✓`,'ok');
-    await Promise.all([loadProducts(), loadStock()]);
-  } catch(e) {
-    toast('送信失敗','err');
-  } finally {
-    isInSubmitting = false;
-    if (btn) { btn.textContent = '追加 ✓'; btn.style.opacity = '1'; }
-  }
+  inCart.push({ date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice });
+  hideLotAddForm(code, idx);
+  document.getElementById(`ilaq_${code}_${idx}`).value = '';
+  updateInCartUI();
+  toast(`${name} ¥${unitPrice.toLocaleString()} をカートに追加 ✓`,'ok');
 }
 
 function calcAmt(code) {
@@ -1318,27 +1386,19 @@ function calcAmt(code) {
   document.getElementById(`pa_${code}`).textContent = (q && p) ? `¥${Math.round(q*p).toLocaleString()}` : '¥ —';
 }
 
-async function addNewLot(code, name, unit) {
-  if (isInSubmitting) return;
+function addNewLot(code, name, unit) {
   const qty = parseFloat(document.getElementById(`pq_${code}`)?.value);
   const unitPrice = parseFloat(document.getElementById(`pp_${code}`)?.value);
   const date = document.getElementById(`pd_${code}`)?.value || fd(new Date());
   if (!qty || qty <= 0) return toast('数量を入力してください','err');
   if (!unitPrice || unitPrice <= 0) return toast('単価を入力してください','err');
-  isInSubmitting = true;
-  const btn = document.querySelector(`#pr_${code} .btn-add`);
-  if (btn) { btn.textContent = '送信中...'; btn.style.opacity = '0.6'; }
-  try {
-    await POST({ action:'addEntry', date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice });
-    toggleProd(code);
-    toast(`${name} 入庫完了 ✓`,'ok');
-    await Promise.all([loadProducts(), loadStock()]);
-  } catch(e) {
-    toast('送信失敗','err');
-  } finally {
-    isInSubmitting = false;
-    if (btn) { btn.textContent = '＋ 入庫登録'; btn.style.opacity = '1'; }
-  }
+  inCart.push({ date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice });
+  // フォームをリセット
+  document.getElementById(`pq_${code}`).value = '';
+  document.getElementById(`pp_${code}`).value = '';
+  document.getElementById(`pa_${code}`).textContent = '¥ —';
+  updateInCartUI();
+  toast(`${name} をカートに追加 ✓`,'ok');
 }
 
 function toggleProd(code) {
@@ -1564,6 +1624,63 @@ async function fixNegativeStock() {
     toast(`${negatives.length}件のマイナス在庫を修正しました`, 'ok');
   } catch(e) {
     toast('修正失敗', 'err');
+  }
+}
+
+
+function updateInCartUI() {
+  const cnt = inCart.length;
+  const total = inCart.reduce((s,c) => s+(c.amount||0), 0);
+  document.getElementById('inCartBar').style.display = cnt ? 'block' : 'none';
+  document.getElementById('inCartCount').textContent = `${cnt}件`;
+  document.getElementById('inCartTotal').textContent = `合計 ¥${fmtYen(total)}`;
+  document.getElementById('inCartDHTitle').textContent = `入庫リスト（${cnt}件）`;
+  document.getElementById('inCartItems').innerHTML = inCart.map((item,i) =>
+    `<div class="in-cart-item">
+      <div class="in-cart-item-info">
+        <div class="in-cart-item-name">${item.name}</div>
+        <div class="in-cart-item-detail">${item.qty}${item.unit} × ¥${fmtYen(item.unitPrice)}</div>
+      </div>
+      <div class="in-cart-item-amt">¥${fmtYen(item.amount)}</div>
+      <button class="in-cart-rm" onclick="removeInCart(${i})">✕</button>
+    </div>`
+  ).join('');
+}
+
+function toggleInCart() {
+  inCartOpen = !inCartOpen;
+  document.getElementById('inCartDetail').classList.toggle('open', inCartOpen);
+}
+
+function removeInCart(i) {
+  inCart.splice(i,1);
+  if (!inCart.length) { inCartOpen = false; document.getElementById('inCartDetail').classList.remove('open'); }
+  updateInCartUI();
+}
+
+function clearInCart() {
+  inCart = []; inCartOpen = false;
+  document.getElementById('inCartDetail').classList.remove('open');
+  updateInCartUI();
+}
+
+async function submitInCart() {
+  if (!inCart.length || isInSubmitting) return;
+  isInSubmitting = true;
+  const btn = document.querySelector('.in-cart-submit');
+  if (btn) { btn.textContent = '送信中...'; btn.style.opacity = '0.7'; }
+  try {
+    await POST({ action:'addBatchEntry', entries: inCart });
+    const cnt = inCart.length;
+    clearInCart();
+    toast(`${cnt}件の入庫を登録しました ✓`,'ok');
+    await Promise.all([loadProducts(), loadStock()]);
+    goTab('out');
+  } catch(e) {
+    toast('送信失敗','err');
+  } finally {
+    isInSubmitting = false;
+    if (btn) { btn.textContent = '入庫登録 →'; btn.style.opacity = '1'; }
   }
 }
 
