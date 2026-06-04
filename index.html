@@ -6,27 +6,28 @@
 <title>鮮魚在庫管理</title>
 <style>
 :root {
-  --bg:       #EEF2F7;
-  --surface:  #FFFFFF;
-  --surface2: #F7F9FC;
-  --surface3: #EEF2F7;
-  --border:   #DDE3EC;
-  --border2:  #C8D0DC;
-  --text:     #0F1923;
-  --text2:    #5A6478;
-  --text3:    #9AA3B2;
-  --accent:   #1A6BFF;
-  --accent-l: #EBF2FF;
-  --accent-d: #1456D6;
-  --green:    #059669;
-  --green-l:  #ECFDF5;
-  --red:      #DC2626;
-  --red-l:    #FEF2F2;
-  --orange:   #D97706;
-  --orange-l: #FFFBEB;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
-  --shadow:    0 2px 8px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
+  /* ── ダークテーマ（プロフェッショナル・ミニマル） ── */
+  --bg:       #0B0F14;
+  --surface:  #141A22;
+  --surface2: #1B232D;
+  --surface3: #232D39;
+  --border:   #28323F;
+  --border2:  #36424F;
+  --text:     #EAEEF4;
+  --text2:    #9BA7B6;
+  --text3:    #6B7787;
+  --accent:   #3B82F6;
+  --accent-l: #16263F;
+  --accent-d: #2563EB;
+  --green:    #10B981;
+  --green-l:  #0E2A22;
+  --red:      #F0584F;
+  --red-l:    #2C1715;
+  --orange:   #F59E0B;
+  --orange-l: #2A1F0C;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+  --shadow:    0 2px 10px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.03);
+  --shadow-lg: 0 10px 32px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
   --r:    16px;
   --r-sm: 10px;
   --r-xs: 6px;
@@ -34,6 +35,7 @@
   --font: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Meiryo", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace;
 }
+html{color-scheme:dark}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{
   background:var(--bg);color:var(--text);
@@ -45,52 +47,58 @@ html,body{
   min-height:100vh;
 }
 body{padding-bottom:90px}
+/* ダークテーマ用の入力フィールド調整 */
+input{color-scheme:dark}
+input[type="date"]::-webkit-calendar-picker-indicator{
+  filter:invert(.7);cursor:pointer;
+}
+input::placeholder{color:var(--text3)}
 
 /* ── HEADER ── */
 .header{
   background:var(--surface);
-  padding:14px 18px 12px;
+  padding:14px 18px 13px;
   position:sticky;top:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;
-  box-shadow:0 1px 0 var(--border),0 2px 8px rgba(0,0,0,.04);
+  border-bottom:1px solid var(--border);
 }
 .header-left{display:flex;align-items:center;gap:12px}
 .header-logo{
-  width:38px;height:38px;border-radius:12px;
-  background:linear-gradient(135deg,#1A6BFF,#0A4ED6);
+  width:38px;height:38px;border-radius:11px;
+  background:linear-gradient(135deg,#3B82F6,#2563EB);
   display:flex;align-items:center;justify-content:center;
-  font-size:18px;font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(26,107,255,.3);
+  font-size:18px;font-weight:700;color:#fff;box-shadow:0 2px 10px rgba(59,130,246,.35);
 }
 .header-title{
   font-family:var(--font);
-  font-size:18px;font-weight:700;
-  color:var(--text);letter-spacing:-.3px;
+  font-size:17px;font-weight:700;
+  color:var(--text);letter-spacing:-.2px;
 }
 .header-date{font-size:11px;color:var(--text3);margin-top:1px;font-weight:500}
 .icon-btn{
-  min-width:44px;height:38px;padding:0 12px;border-radius:12px;
-  background:var(--surface2);border:1.5px solid var(--border);
+  min-width:44px;height:36px;padding:0 14px;border-radius:10px;
+  background:var(--surface2);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;font-size:13px;font-weight:700;color:var(--text2);transition:all .15s;
-  box-shadow:var(--shadow-sm);
+  cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);transition:all .15s;
 }
-.icon-btn:active{transform:scale(.92);background:var(--border)}
+.icon-btn:active{transform:scale(.94);background:var(--surface3)}
+.icon-btn:hover{border-color:var(--border2);color:var(--text)}
 
 /* ── TABS ── */
 .tabs{
   background:var(--surface);
-  border-bottom:1.5px solid var(--border);
-  display:flex;position:sticky;top:65px;z-index:99;
-  box-shadow:0 2px 6px rgba(0,0,0,.04);
+  border-bottom:1px solid var(--border);
+  display:flex;position:sticky;top:64px;z-index:99;
 }
 .tab{
-  flex:1;padding:14px 4px 13px;
+  flex:1;padding:13px 4px 12px;
   text-align:center;font-size:14px;font-weight:600;
   color:var(--text3);cursor:pointer;
-  border-bottom:2.5px solid transparent;
-  transition:all .2s;user-select:none;letter-spacing:.5px;
+  border-bottom:2px solid transparent;
+  transition:all .18s;user-select:none;letter-spacing:.5px;
 }
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--text);border-bottom-color:var(--accent)}
 
 /* ── PAGES ── */
 .page{display:none;padding:16px}
@@ -100,7 +108,7 @@ body{padding-bottom:90px}
 .search-wrap{position:relative;margin-bottom:14px}
 .search-wrap input{
   width:100%;background:var(--surface);
-  border:1.5px solid var(--border);
+  border:1px solid var(--border);
   color:var(--text);padding:11px 14px;
   border-radius:var(--r);font-size:14px;
   font-family:var(--font);outline:none;
@@ -108,7 +116,7 @@ body{padding-bottom:90px}
   box-shadow:var(--shadow-sm);
   font-weight:500;
 }
-.search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,107,255,.1)}
+.search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
 .search-wrap input::placeholder{color:var(--text3)}
 
 /* ── SECTION LABEL ── */
@@ -120,32 +128,31 @@ body{padding-bottom:90px}
 }
 
 /* ── 出庫 STOCK CARDS ── */
-.stock-list{display:flex;flex-direction:column;gap:10px}
+.stock-list{display:flex;flex-direction:column;gap:9px}
 .stock-card{
   background:var(--surface);
-  border:1.5px solid var(--border);
-  border-radius:var(--r);padding:14px 16px;
+  border:1px solid var(--border);
+  border-radius:14px;padding:15px 16px;
   cursor:pointer;transition:all .15s;
   display:flex;align-items:center;gap:14px;
-  box-shadow:var(--shadow);
 }
-.stock-card:active{transform:scale(.985);box-shadow:var(--shadow-sm)}
-.stock-card:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(26,107,255,.1)}
-.stock-card.warn{border-color:var(--orange);background:var(--orange-l)}
+.stock-card:active{transform:scale(.99);background:var(--surface2)}
+.stock-card:hover{border-color:var(--border2);background:var(--surface2)}
+.stock-card.warn{border-color:rgba(245,158,11,.4);background:var(--orange-l)}
 .stock-info{flex:1;min-width:0}
 .stock-name{
   font-family:var(--font);
-  font-weight:600;font-size:15px;letter-spacing:-.2px;
+  font-weight:600;font-size:15px;letter-spacing:-.2px;color:var(--text);
 }
-.stock-sub{font-size:12px;color:var(--text2);margin-top:3px;font-weight:500}
+.stock-sub{font-size:12px;color:var(--text3);margin-top:4px;font-weight:500}
 .stock-qty-block{text-align:right;flex-shrink:0}
 .stock-qty-num{
   font-family:var(--mono);
-  font-size:24px;font-weight:600;
-  color:var(--green);line-height:1;
+  font-size:23px;font-weight:600;
+  color:var(--green);line-height:1;letter-spacing:-.5px;
 }
 .stock-qty-num.warn{color:var(--orange)}
-.stock-qty-unit{font-size:11px;color:var(--text3);margin-top:2px;font-weight:600}
+.stock-qty-unit{font-size:11px;color:var(--text3);margin-top:3px;font-weight:600}
 .stock-arrow{
   color:var(--text3);font-size:12px;flex-shrink:0;margin-left:4px;
 }
@@ -154,11 +161,11 @@ body{padding-bottom:90px}
 .check-panel{
   background:var(--surface);border:1.5px solid var(--orange);
   border-radius:var(--r);overflow:hidden;margin-bottom:14px;
-  box-shadow:0 2px 8px rgba(217,119,6,.1);
+  box-shadow:0 2px 8px rgba(245,158,11,.1);
 }
 .check-panel-header{
   background:var(--orange-l);padding:10px 14px;
-  border-bottom:1px solid rgba(217,119,6,.2);
+  border-bottom:1px solid rgba(245,158,11,.2);
   font-size:12px;font-weight:700;color:var(--orange);letter-spacing:.3px;
 }
 .check-item{
@@ -177,7 +184,7 @@ body{padding-bottom:90px}
 
 /* ── CHECK BTN ── */
 .check-btn{
-  background:var(--surface);border:1.5px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   color:var(--text2);padding:6px 12px;border-radius:var(--r-sm);
   font-family:var(--font);font-size:11px;
   font-weight:700;cursor:pointer;letter-spacing:.3px;
@@ -189,11 +196,11 @@ body{padding-bottom:90px}
 /* ── 入庫 PRODUCT LIST ── */
 .product-list{display:flex;flex-direction:column;gap:8px;margin-bottom:90px}
 .product-row{
-  background:var(--surface);border:1.5px solid var(--border);
-  border-radius:var(--r);overflow:hidden;
-  transition:border-color .2s;box-shadow:var(--shadow);
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;
+  transition:border-color .2s;
 }
-.product-row.open{border-color:var(--accent);box-shadow:0 4px 16px rgba(26,107,255,.12)}
+.product-row.open{border-color:var(--accent)}
 .product-row-hd{
   display:flex;align-items:center;padding:13px 16px;
   cursor:pointer;gap:12px;user-select:none;
@@ -213,7 +220,7 @@ body{padding-bottom:90px}
   transition:all .2s;
 }
 .product-row.open .prod-chev{
-  background:var(--accent-l);border-color:rgba(26,107,255,.2);
+  background:var(--accent-l);border-color:rgba(59,130,246,.35);
   color:var(--accent);transform:rotate(90deg);
 }
 .cart-tag{
@@ -225,7 +232,7 @@ body{padding-bottom:90px}
 
 /* ── 入庫フォーム ── */
 .prod-form{
-  display:none;border-top:1.5px solid var(--border);
+  display:none;border-top:1px solid var(--border);
   background:var(--surface2);flex-direction:column;
 }
 .product-row.open .prod-form{display:flex}
@@ -238,7 +245,7 @@ body{padding-bottom:90px}
 }
 .in-lot-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .in-lot-row{
-  background:var(--surface);border:1.5px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:var(--r-sm);padding:10px 12px;
   display:flex;align-items:center;gap:10px;
   box-shadow:var(--shadow-sm);
@@ -250,7 +257,7 @@ body{padding-bottom:90px}
 }
 .in-lot-remain{font-size:12px;color:var(--text2);margin-top:2px;font-weight:500}
 .in-lot-add-btn{
-  background:var(--green-l);border:1.5px solid rgba(5,150,105,.2);
+  background:var(--green-l);border:1.5px solid rgba(16,185,129,.2);
   color:var(--green);padding:7px 12px;border-radius:var(--r-sm);
   font-family:var(--font);font-size:12px;font-weight:700;
   cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;
@@ -259,7 +266,7 @@ body{padding-bottom:90px}
 
 /* ロット追加インライン */
 .in-lot-add-form{
-  background:var(--green-l);border:1.5px solid rgba(5,150,105,.25);
+  background:var(--green-l);border:1.5px solid rgba(16,185,129,.25);
   border-radius:var(--r-sm);padding:12px;
   display:none;flex-direction:column;gap:8px;
 }
@@ -271,7 +278,7 @@ body{padding-bottom:90px}
 }
 .in-lot-add-row{display:flex;gap:8px;align-items:center}
 .in-lot-add-row input{
-  flex:1;background:var(--surface);border:1.5px solid rgba(5,150,105,.3);
+  flex:1;background:var(--surface);border:1.5px solid rgba(16,185,129,.3);
   color:var(--text);padding:10px;border-radius:var(--r-sm);
   font-size:20px;font-family:var(--mono);font-weight:600;
   outline:none;text-align:center;-webkit-appearance:none;
@@ -305,7 +312,7 @@ body{padding-bottom:90px}
   font-weight:600;letter-spacing:.2px;
 }
 .form-date-row input{
-  flex:1;background:var(--surface);border:1.5px solid var(--border);
+  flex:1;background:var(--surface);border:1px solid var(--border);
   color:var(--text);padding:9px 12px;border-radius:var(--r-sm);
   font-size:14px;font-family:var(--font);outline:none;
   box-shadow:var(--shadow-sm);
@@ -318,15 +325,15 @@ body{padding-bottom:90px}
   display:block;margin-bottom:5px;letter-spacing:.3px;text-transform:uppercase;
 }
 .fg input{
-  width:100%;background:var(--surface);border:1.5px solid var(--border);
+  width:100%;background:var(--surface);border:1px solid var(--border);
   color:var(--text);padding:10px 12px;border-radius:var(--r-sm);
   font-size:17px;font-family:var(--mono);font-weight:600;
   outline:none;-webkit-appearance:none;text-align:right;
   box-shadow:var(--shadow-sm);
 }
-.fg input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,107,255,.1)}
+.fg input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
 .amount-preview{
-  background:var(--accent-l);border:1.5px solid rgba(26,107,255,.15);
+  background:var(--accent-l);border:1.5px solid rgba(59,130,246,.15);
   border-radius:var(--r-sm);padding:11px 14px;
   display:flex;justify-content:space-between;align-items:center;
   margin-bottom:10px;
@@ -344,11 +351,11 @@ body{padding-bottom:90px}
   padding:12px;border-radius:var(--r-sm);
   font-family:var(--font);font-weight:700;font-size:14px;
   cursor:pointer;transition:all .15s;letter-spacing:.2px;
-  box-shadow:0 2px 8px rgba(26,107,255,.3);
+  box-shadow:0 2px 8px rgba(59,130,246,.3);
 }
 .btn-add:active{transform:scale(.97);background:var(--accent-d)}
 .btn-close{
-  background:var(--surface);border:1.5px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   color:var(--text2);padding:12px 14px;border-radius:var(--r-sm);
   font-family:var(--font);font-size:14px;cursor:pointer;
   font-weight:600;
@@ -375,7 +382,7 @@ body{padding-bottom:90px}
 }
 .sheet-header{
   padding:16px 18px 14px;
-  border-bottom:1.5px solid var(--border);
+  border-bottom:1px solid var(--border);
 }
 .sheet-title{
   font-family:var(--font);
@@ -386,12 +393,12 @@ body{padding-bottom:90px}
 /* ロットカード */
 .lot-list{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
 .lot-card{
-  background:var(--surface2);border:1.5px solid var(--border);
+  background:var(--surface2);border:1px solid var(--border);
   border-radius:var(--r);padding:14px 16px;cursor:pointer;
   transition:all .15s;box-shadow:var(--shadow-sm);
 }
 .lot-card:active{border-color:var(--accent);background:var(--accent-l)}
-.lot-card.selected{border-color:var(--accent);background:var(--accent-l);box-shadow:0 0 0 3px rgba(26,107,255,.1)}
+.lot-card.selected{border-color:var(--accent);background:var(--accent-l);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
 .lot-card-top{
   display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
 }
@@ -418,26 +425,26 @@ body{padding-bottom:90px}
 .lot-empty{padding:32px 20px;text-align:center;color:var(--text2);font-size:14px}
 
 /* 出庫フォーム */
-.out-form{padding:0 16px 16px;border-top:1.5px solid var(--border);padding-top:14px}
+.out-form{padding:0 16px 16px;border-top:1px solid var(--border);padding-top:14px}
 .out-form-title{
   font-size:11px;color:var(--text2);font-weight:700;
   margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase;
 }
 .out-qty-wrap{display:flex;gap:8px;margin-bottom:10px}
 .out-qty-wrap input{
-  flex:1;background:var(--surface2);border:1.5px solid var(--border);
+  flex:1;background:var(--surface2);border:1px solid var(--border);
   color:var(--text);padding:14px;border-radius:var(--r-sm);
   font-size:28px;font-family:var(--mono);font-weight:600;
   outline:none;-webkit-appearance:none;text-align:center;
   box-shadow:inset 0 1px 3px rgba(0,0,0,.06);
 }
-.out-qty-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,107,255,.1)}
+.out-qty-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
 .out-date-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .out-date-row label{
   font-size:12px;color:var(--text2);font-weight:700;flex-shrink:0;letter-spacing:.2px;
 }
 .out-date-row input{
-  flex:1;background:var(--surface2);border:1.5px solid var(--border);
+  flex:1;background:var(--surface2);border:1px solid var(--border);
   color:var(--text);padding:9px 12px;border-radius:var(--r-sm);
   font-size:14px;font-family:var(--font);outline:none;
 }
@@ -457,18 +464,18 @@ body{padding-bottom:90px}
 .btn-full:active{transform:scale(.98)}
 .btn-out{
   background:var(--red);color:#fff;margin-bottom:8px;
-  box-shadow:0 2px 8px rgba(220,38,38,.25);
+  box-shadow:0 2px 8px rgba(240,88,79,.25);
 }
 .btn-cancel{
   background:var(--surface2);color:var(--text2);
-  border:1.5px solid var(--border);
+  border:1px solid var(--border);
 }
 
 /* 確認モーダル */
 .confirm-card{
   margin:12px 16px 0;
   background:var(--surface2);border-radius:var(--r);
-  overflow:hidden;border:1.5px solid var(--border);
+  overflow:hidden;border:1px solid var(--border);
 }
 .confirm-row{
   display:flex;justify-content:space-between;align-items:center;
@@ -485,14 +492,14 @@ body{padding-bottom:90px}
 /* ── 履歴 ── */
 .date-row{display:flex;gap:8px;margin-bottom:14px;align-items:center}
 .date-row input{
-  flex:1;background:var(--surface);border:1.5px solid var(--border);
+  flex:1;background:var(--surface);border:1px solid var(--border);
   color:var(--text);padding:10px 14px;border-radius:var(--r);
   font-size:14px;font-family:var(--font);outline:none;
   box-shadow:var(--shadow-sm);font-weight:500;
 }
 .date-row input:focus{border-color:var(--accent)}
 .today-btn{
-  background:var(--surface);border:1.5px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   color:var(--text2);padding:10px 14px;border-radius:var(--r);
   font-family:var(--font);font-size:13px;
   font-weight:700;cursor:pointer;white-space:nowrap;
@@ -500,7 +507,7 @@ body{padding-bottom:90px}
 }
 .hist-list{display:flex;flex-direction:column;gap:8px}
 .hist-card{
-  background:var(--surface);border:1.5px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:var(--r);padding:13px 16px;
   display:flex;align-items:center;gap:12px;
   box-shadow:var(--shadow);
@@ -532,7 +539,7 @@ body{padding-bottom:90px}
 .settings-page.active{display:block;padding:16px}
 .settings-back{display:flex;align-items:center;gap:12px;margin-bottom:22px}
 .back-btn{
-  background:var(--surface);border:1.5px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   color:var(--text);padding:9px 14px;border-radius:var(--r-sm);
   font-family:var(--font);font-size:13px;
   font-weight:700;cursor:pointer;box-shadow:var(--shadow-sm);
@@ -548,7 +555,7 @@ body{padding-bottom:90px}
   margin-bottom:10px;
 }
 .opening-row{
-  background:var(--surface);border:1.5px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:var(--r);padding:12px 16px;
   margin-bottom:7px;display:flex;align-items:center;gap:10px;
   box-shadow:var(--shadow-sm);
@@ -558,7 +565,7 @@ body{padding-bottom:90px}
   font-family:var(--font);letter-spacing:-.1px;
 }
 .opening-input{
-  width:76px;background:var(--surface2);border:1.5px solid var(--border);
+  width:76px;background:var(--surface2);border:1px solid var(--border);
   color:var(--text);padding:8px;border-radius:var(--r-sm);
   font-size:15px;font-family:var(--mono);
   font-weight:600;text-align:center;outline:none;
@@ -566,7 +573,7 @@ body{padding-bottom:90px}
 .opening-input:focus{border-color:var(--accent)}
 .opening-unit{font-size:12px;color:var(--text3);width:24px;font-weight:600}
 .set-input{
-  width:100%;background:var(--surface);border:1.5px solid var(--border);
+  width:100%;background:var(--surface);border:1px solid var(--border);
   color:var(--text);padding:12px 14px;border-radius:var(--r);
   font-size:14px;font-family:var(--font);
   outline:none;margin-bottom:8px;box-shadow:var(--shadow-sm);
@@ -578,11 +585,11 @@ body{padding-bottom:90px}
   background:var(--orange);color:#fff;
   font-family:var(--font);font-weight:700;font-size:14px;
   cursor:pointer;margin-top:6px;letter-spacing:.2px;
-  box-shadow:0 2px 8px rgba(217,119,6,.2);
+  box-shadow:0 2px 8px rgba(245,158,11,.2);
 }
 .set-fix-result{
   display:none;margin-top:8px;
-  background:var(--green-l);border:1.5px solid rgba(5,150,105,.2);
+  background:var(--green-l);border:1.5px solid rgba(16,185,129,.2);
   border-radius:var(--r-sm);padding:10px 14px;
   font-size:13px;color:var(--green);font-weight:700;
 }
@@ -594,7 +601,7 @@ body{padding-bottom:90px}
   display:block;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase;
 }
 .np-input{
-  width:100%;background:var(--surface2);border:1.5px solid var(--border);
+  width:100%;background:var(--surface2);border:1px solid var(--border);
   color:var(--text);padding:12px 14px;border-radius:var(--r-sm);
   font-size:15px;font-family:var(--font);
   outline:none;font-weight:500;
@@ -607,16 +614,16 @@ body{padding-bottom:90px}
   justify-content:center;padding:24px;
 }
 .setup-card{
-  background:var(--surface);border:1.5px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:24px;padding:28px 24px;
   box-shadow:var(--shadow-lg);width:100%;max-width:400px;
 }
 .setup-logo{
   width:60px;height:60px;border-radius:18px;
-  background:linear-gradient(135deg,#1A6BFF,#0A4ED6);
+  background:linear-gradient(135deg,#3B82F6,#2563EB);
   display:flex;align-items:center;justify-content:center;
   font-size:28px;font-weight:700;color:#fff;margin-bottom:16px;
-  box-shadow:0 4px 16px rgba(26,107,255,.3);
+  box-shadow:0 4px 16px rgba(59,130,246,.3);
 }
 .setup-title{
   font-family:var(--font);
@@ -632,7 +639,7 @@ body{padding-bottom:90px}
   display:block;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase;
 }
 .setup-input{
-  width:100%;background:var(--surface2);border:1.5px solid var(--border);
+  width:100%;background:var(--surface2);border:1px solid var(--border);
   color:var(--text);padding:12px 14px;border-radius:var(--r-sm);
   font-size:13px;font-family:monospace;outline:none;margin-bottom:12px;
   font-weight:500;
@@ -643,14 +650,14 @@ body{padding-bottom:90px}
   background:linear-gradient(135deg,var(--accent),var(--accent-d));
   color:#fff;border:none;border-radius:var(--r-sm);
   font-family:var(--font);font-weight:700;font-size:15px;
-  cursor:pointer;box-shadow:0 4px 16px rgba(26,107,255,.3);
+  cursor:pointer;box-shadow:0 4px 16px rgba(59,130,246,.3);
   letter-spacing:.2px;
 }
 
 /* ── BUTTONS ── */
 .btn-sm{
   padding:7px 12px;border-radius:var(--r-sm);
-  border:1.5px solid var(--border);
+  border:1px solid var(--border);
   background:var(--surface);color:var(--text2);
   font-family:var(--font);
   font-size:12px;font-weight:700;cursor:pointer;
@@ -661,7 +668,7 @@ body{padding-bottom:90px}
 .btn-sm.green{background:var(--green);color:#fff;border-color:transparent}
 .mt8{margin-top:8px}
 .add-prod-btn{
-  background:var(--accent-l);border:1.5px solid rgba(26,107,255,.2);
+  background:var(--accent-l);border:1.5px solid rgba(59,130,246,.2);
   color:var(--accent);padding:7px 12px;border-radius:var(--r-sm);
   font-family:var(--font);font-size:12px;font-weight:700;
   cursor:pointer;letter-spacing:.2px;
@@ -675,7 +682,7 @@ body{padding-bottom:90px}
 .summary-month-selector::-webkit-scrollbar{display:none}
 .month-chip{
   flex-shrink:0;padding:8px 14px;border-radius:100px;
-  border:1.5px solid var(--border);background:var(--surface);
+  border:1px solid var(--border);background:var(--surface);
   font-size:13px;font-weight:700;cursor:pointer;
   transition:all .15s;color:var(--text2);
   box-shadow:var(--shadow-sm);white-space:nowrap;
@@ -683,7 +690,7 @@ body{padding-bottom:90px}
 .month-chip.active{
   background:var(--accent);color:#fff;
   border-color:transparent;
-  box-shadow:0 2px 8px rgba(26,107,255,.3);
+  box-shadow:0 2px 8px rgba(59,130,246,.3);
 }
 .month-chip:active{transform:scale(.95)}
 
@@ -691,7 +698,7 @@ body{padding-bottom:90px}
   background:linear-gradient(135deg,var(--accent),var(--accent-d));
   border-radius:var(--r);padding:16px 18px;
   margin-bottom:14px;color:#fff;
-  box-shadow:0 4px 16px rgba(26,107,255,.3);
+  box-shadow:0 4px 16px rgba(59,130,246,.3);
 }
 .summary-total-label{font-size:12px;opacity:.8;font-weight:600;letter-spacing:.3px}
 .summary-total-value{
@@ -702,7 +709,7 @@ body{padding-bottom:90px}
 
 .summary-list{display:flex;flex-direction:column;gap:8px}
 .summary-card{
-  background:var(--surface);border:1.5px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:var(--r);padding:14px 16px;
   box-shadow:var(--shadow);
   display:flex;align-items:center;gap:12px;
@@ -734,7 +741,7 @@ body{padding-bottom:90px}
   background:var(--accent);color:#fff;
   border-radius:var(--r);padding:12px 16px;
   display:flex;align-items:center;gap:12px;
-  box-shadow:0 4px 24px rgba(26,107,255,.4);
+  box-shadow:0 4px 24px rgba(59,130,246,.4);
   pointer-events:all;cursor:pointer;
   transition:all .2s;
 }
@@ -754,14 +761,14 @@ body{padding-bottom:90px}
 
 /* カート詳細 */
 .in-cart-detail{
-  background:var(--surface);border:1.5px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:var(--r);margin-bottom:8px;overflow:hidden;
   box-shadow:var(--shadow-lg);display:none;pointer-events:all;
 }
 .in-cart-detail.open{display:block}
 .in-cart-dh{
   padding:10px 16px;background:var(--surface2);
-  border-bottom:1.5px solid var(--border);
+  border-bottom:1px solid var(--border);
   display:flex;justify-content:space-between;align-items:center;
 }
 .in-cart-dh-title{font-size:13px;font-weight:700}
@@ -791,7 +798,7 @@ body{padding-bottom:90px}
   background:var(--red);color:#fff;
   border-radius:var(--r);padding:12px 16px;
   display:flex;align-items:center;gap:12px;
-  box-shadow:0 4px 24px rgba(220,38,38,.4);
+  box-shadow:0 4px 24px rgba(240,88,79,.4);
   pointer-events:all;cursor:pointer;transition:all .2s;
 }
 .out-cart-inner:active{transform:scale(.98)}
@@ -815,18 +822,19 @@ body{padding-bottom:90px}
 .toast{
   position:fixed;top:76px;left:50%;
   transform:translateX(-50%) translateY(-8px);
-  background:var(--text);color:#fff;
+  background:var(--surface3);color:var(--text);
+  border:1px solid var(--border2);
   padding:10px 20px;border-radius:100px;
   font-size:13px;font-weight:700;
   opacity:0;transition:all .25s;pointer-events:none;
   white-space:nowrap;z-index:400;
-  box-shadow:0 4px 20px rgba(0,0,0,.2);
+  box-shadow:0 8px 28px rgba(0,0,0,.5);
   letter-spacing:.2px;
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.ok{background:var(--green)}
-.toast.err{background:var(--red)}
-.toast.warn{background:var(--orange)}
+.toast.ok{background:var(--green);color:#06281E;border-color:transparent}
+.toast.err{background:var(--red);color:#2C0E0C;border-color:transparent}
+.toast.warn{background:var(--orange);color:#2A1B05;border-color:transparent}
 
 /* ── LOADING ── */
 .loading{
@@ -977,7 +985,7 @@ body{padding-bottom:90px}
   <div class="set-section">
     <div class="set-label">期首在庫</div>
     <div id="openingList"><div class="loading"><div class="spin"></div></div></div>
-    <button class="btn-full btn-out mt8" style="background:var(--green);box-shadow:0 2px 8px rgba(5,150,105,.25);width:100%;padding:13px;border-radius:var(--r-sm);border:none;font-family:var(--font);font-weight:700;font-size:14px;cursor:pointer;margin-top:10px;color:#fff" onclick="saveOpening()">期首在庫を保存</button>
+    <button class="btn-full btn-out mt8" style="background:var(--green);box-shadow:0 2px 8px rgba(16,185,129,.25);width:100%;padding:13px;border-radius:var(--r-sm);border:none;font-family:var(--font);font-weight:700;font-size:14px;cursor:pointer;margin-top:10px;color:#fff" onclick="saveOpening()">期首在庫を保存</button>
     <button class="set-fix-btn" onclick="fixNegativeStock()">マイナス在庫を0に修正</button>
     <div class="set-fix-result" id="fixResult"></div>
   </div>
@@ -1059,7 +1067,7 @@ body{padding-bottom:90px}
         <input class="np-input" type="text" id="npUnit" placeholder="例: 箱, kg, 本..." />
       </div>
       <div style="padding:0 16px">
-        <button class="btn-full btn-out mt8" style="background:var(--accent);box-shadow:0 2px 8px rgba(26,107,255,.25)" onclick="submitNP()">追加する</button>
+        <button class="btn-full btn-out mt8" style="background:var(--accent);box-shadow:0 2px 8px rgba(59,130,246,.25)" onclick="submitNP()">追加する</button>
         <button class="btn-full btn-cancel mt8" onclick="closeNP()">キャンセル</button>
       </div>
     </div>
@@ -1385,93 +1393,114 @@ async function submitOutCart() {
 }
 
 // ============================================================
-// 入庫タブ — ロット表示 + 新規ロット
+// 入庫タブ — ロット表示 + 新規ロット（遅延読み込み）
 // ============================================================
+let lotLoaded = {}; // code -> true（ロット取得済みフラグ）
+
 async function renderProducts(data) {
   const el = document.getElementById('productList');
   document.getElementById('inLabel').textContent = `商品一覧（${(data||[]).length}件）`;
   if (!data || !data.length) { el.innerHTML = '<div class="loading">商品がありません</div>'; return; }
 
-  // 全商品のロットを一括取得（キャッシュ）
-  const today = fd(new Date());
-  el.innerHTML = '<div class="loading"><div class="spin"></div>読み込み中...</div>';
-
-  // ロット情報を並行取得
-  const lotResults = await Promise.all(
-    data.map(s => GET('getLots', { code: s.code }).catch(() => ({ lots:[] })))
-  );
-  data.forEach((s, i) => { lots[s.code] = lotResults[i].lots || []; });
-
+  // ★ ロットは取得せず、行だけ即時表示（軽快）。
+  // ロットは商品を開いた時だけ getLots で取得する（lazy-load）
+  lotLoaded = {};
   el.innerHTML = data.map(s => {
     const inCart = cart.filter(c => c.code == s.code).length;
     const tag = inCart ? `<span class="cart-tag">×${inCart}</span>` : '';
-    const lotList = lots[s.code] || [];
-
-    // 既存ロットHTML
-    const existingLots = lotList.map((l, li) => `
-      <div class="in-lot-row" id="ilr_${s.code}_${li}">
-        <div class="in-lot-info">
-          <div class="in-lot-price">¥${l.unitPrice.toLocaleString()}</div>
-          <div class="in-lot-remain">残 ${fn(l.remainQty)}${s.unit} · ¥${l.remainAmount.toLocaleString()}</div>
-        </div>
-        <button class="in-lot-add-btn" onclick="showLotAddForm(${s.code},${li},${l.unitPrice},'${s.unit}')">＋ 追加</button>
-      </div>
-      <div class="in-lot-add-form" id="ilaf_${s.code}_${li}">
-        <div class="in-lot-add-top">
-          <div class="in-lot-add-price">¥${l.unitPrice.toLocaleString()} /単価</div>
-          <button class="in-lot-cancel-btn" onclick="hideLotAddForm(${s.code},${li})">×</button>
-        </div>
-        <div class="in-lot-add-row">
-          <input type="number" id="ilaq_${s.code}_${li}" placeholder="数量" min="0.1" step="0.1" />
-          <button class="in-lot-confirm-btn" onclick="addToLot(${s.code},${li},${l.unitPrice},'${s.name}','${s.unit}')">追加</button>
-        </div>
-      </div>
-    `).join('');
-
     return `<div class="product-row" id="pr_${s.code}">
       <div class="product-row-hd" onclick="toggleProd(${s.code})">
         <div class="prod-info">
           <div class="prod-name">${s.name}${tag}</div>
-          <div class="prod-meta">在庫 ${fn(s.currentQty)}${s.unit} · ロット ${lotList.length}件</div>
+          <div class="prod-meta">在庫 ${fn(s.currentQty)}${s.unit}</div>
         </div>
         <div class="prod-chev">▶</div>
       </div>
       <div class="prod-form" id="pf_${s.code}">
-        ${lotList.length ? `
-        <div class="in-lot-section">
-          <div class="in-lot-title">既存ロット（在庫あり）</div>
-          <div class="in-lot-list">${existingLots}</div>
-        </div>` : ''}
-        <div class="new-lot-section">
-          ${lotList.length ? '<div class="new-lot-divider">新しい単価で入庫</div>' : ''}
-          <div class="new-lot-form">
-            <div class="form-date-row">
-              <label>入庫日</label>
-              <input type="date" id="pd_${s.code}" value="${today}" />
-            </div>
-            <div class="form-2col">
-              <div class="fg">
-                <label>数量</label>
-                <input type="number" id="pq_${s.code}" placeholder="0" min="0" step="0.1" oninput="calcAmt(${s.code})" />
-              </div>
-              <div class="fg">
-                <label>単価（円）</label>
-                <input type="number" id="pp_${s.code}" placeholder="0" min="0" step="1" oninput="calcAmt(${s.code})" />
-              </div>
-            </div>
-            <div class="amount-preview">
-              <span>金額</span>
-              <span id="pa_${s.code}">¥ —</span>
-            </div>
-            <div class="form-btns">
-              <button class="btn-add" onclick="addNewLot(${s.code},'${s.name}','${s.unit}')">＋ カートに追加</button>
-              <button class="btn-close" onclick="toggleProd(${s.code})">閉じる</button>
-            </div>
-          </div>
-        </div>
+        <div class="loading" style="padding:24px 20px"><div class="spin"></div></div>
       </div>
     </div>`;
   }).join('');
+}
+
+// 商品1件のロットを取得してフォーム本体を描画
+async function loadProdForm(code) {
+  const s = stock.find(x => x.code == code);
+  if (!s) return;
+  const form = document.getElementById(`pf_${code}`);
+  if (!form) return;
+  const today = fd(new Date());
+
+  // ロット未取得なら取得
+  if (!lotLoaded[code]) {
+    try {
+      const d = await GET('getLots', { code });
+      lots[code] = d.lots || [];
+      lotLoaded[code] = true;
+    } catch(e) {
+      lots[code] = [];
+      lotLoaded[code] = true;
+    }
+  }
+  const lotList = lots[code] || [];
+
+  // 在庫情報の行を更新（ロット件数を表示）
+  const meta = document.querySelector(`#pr_${code} .prod-meta`);
+  if (meta) meta.textContent = `在庫 ${fn(s.currentQty)}${s.unit} · ロット ${lotList.length}件`;
+
+  const existingLots = lotList.map((l, li) => `
+    <div class="in-lot-row" id="ilr_${code}_${li}">
+      <div class="in-lot-info">
+        <div class="in-lot-price">¥${l.unitPrice.toLocaleString()}</div>
+        <div class="in-lot-remain">残 ${fn(l.remainQty)}${s.unit} · ¥${l.remainAmount.toLocaleString()}</div>
+      </div>
+      <button class="in-lot-add-btn" onclick="showLotAddForm(${code},${li},${l.unitPrice},'${s.unit}')">＋ 追加</button>
+    </div>
+    <div class="in-lot-add-form" id="ilaf_${code}_${li}">
+      <div class="in-lot-add-top">
+        <div class="in-lot-add-price">¥${l.unitPrice.toLocaleString()} /単価</div>
+        <button class="in-lot-cancel-btn" onclick="hideLotAddForm(${code},${li})">×</button>
+      </div>
+      <div class="in-lot-add-row">
+        <input type="number" id="ilaq_${code}_${li}" placeholder="数量" min="0.1" step="0.1" />
+        <button class="in-lot-confirm-btn" onclick="addToLot(${code},${li},${l.unitPrice},'${s.name}','${s.unit}')">追加</button>
+      </div>
+    </div>
+  `).join('');
+
+  form.innerHTML = `
+    ${lotList.length ? `
+    <div class="in-lot-section">
+      <div class="in-lot-title">既存ロット（在庫あり）</div>
+      <div class="in-lot-list">${existingLots}</div>
+    </div>` : ''}
+    <div class="new-lot-section">
+      ${lotList.length ? '<div class="new-lot-divider">新しい単価で入庫</div>' : ''}
+      <div class="new-lot-form">
+        <div class="form-date-row">
+          <label>入庫日</label>
+          <input type="date" id="pd_${code}" value="${today}" />
+        </div>
+        <div class="form-2col">
+          <div class="fg">
+            <label>数量</label>
+            <input type="number" id="pq_${code}" placeholder="0" min="0" step="0.1" oninput="calcAmt(${code})" />
+          </div>
+          <div class="fg">
+            <label>単価（円）</label>
+            <input type="number" id="pp_${code}" placeholder="0" min="0" step="1" oninput="calcAmt(${code})" />
+          </div>
+        </div>
+        <div class="amount-preview">
+          <span>金額</span>
+          <span id="pa_${code}">¥ —</span>
+        </div>
+        <div class="form-btns">
+          <button class="btn-add" onclick="addNewLot(${code},'${s.name}','${s.unit}')">＋ カートに追加</button>
+          <button class="btn-close" onclick="toggleProd(${code})">閉じる</button>
+        </div>
+      </div>
+    </div>`;
 }
 
 function showLotAddForm(code, idx, price, unit) {
@@ -1529,7 +1558,11 @@ function toggleProd(code) {
   const row = document.getElementById(`pr_${code}`);
   if (!row) return;
   if (openProd === code) { row.classList.remove('open'); openProd = null; }
-  else { row.classList.add('open'); openProd = code; setTimeout(() => row.scrollIntoView({behavior:'smooth',block:'nearest'}), 100); }
+  else {
+    row.classList.add('open'); openProd = code;
+    loadProdForm(code); // ★ 開いた時にロットを取得して描画（lazy-load）
+    setTimeout(() => row.scrollIntoView({behavior:'smooth',block:'nearest'}), 100);
+  }
 }
 
 function filterIn() {
@@ -1901,14 +1934,14 @@ function renderSummary() {
       <div class="summary-total-sub">${headerSub}</div>
     </div>
     ${isTotal ? `
-    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:14px;box-shadow:var(--shadow-sm)">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:14px;box-shadow:var(--shadow-sm)">
       <div style="font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">棚卸し確認 — 全商品</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div style="background:var(--green-l);border:1px solid rgba(5,150,105,.2);border-radius:var(--r-sm);padding:10px;text-align:center">
+        <div style="background:var(--green-l);border:1px solid rgba(16,185,129,.2);border-radius:var(--r-sm);padding:10px;text-align:center">
           <div style="font-size:11px;color:var(--green);font-weight:700">入庫累計</div>
           <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);margin-top:4px">+¥${fmtYen(positiveTotal)}</div>
         </div>
-        <div style="background:var(--red-l);border:1px solid rgba(220,38,38,.2);border-radius:var(--r-sm);padding:10px;text-align:center">
+        <div style="background:var(--red-l);border:1px solid rgba(240,88,79,.2);border-radius:var(--r-sm);padding:10px;text-align:center">
           <div style="font-size:11px;color:var(--red);font-weight:700">出庫累計</div>
           <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--red);margin-top:4px">-¥${fmtYen(negativeTotal)}</div>
         </div>
