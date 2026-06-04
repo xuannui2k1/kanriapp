@@ -6,36 +6,39 @@
 <title>鮮魚在庫管理</title>
 <style>
 :root {
-  /* ── ダークテーマ（プロフェッショナル・ミニマル） ── */
-  --bg:       #0B0F14;
-  --surface:  #141A22;
-  --surface2: #1B232D;
-  --surface3: #232D39;
-  --border:   #28323F;
-  --border2:  #36424F;
-  --text:     #EAEEF4;
-  --text2:    #9BA7B6;
-  --text3:    #6B7787;
-  --accent:   #3B82F6;
-  --accent-l: #16263F;
-  --accent-d: #2563EB;
-  --green:    #10B981;
-  --green-l:  #0E2A22;
-  --red:      #F0584F;
-  --red-l:    #2C1715;
-  --orange:   #F59E0B;
-  --orange-l: #2A1F0C;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
-  --shadow:    0 2px 10px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.03);
-  --shadow-lg: 0 10px 32px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+  /* ── ライトテーマ（ネイビー + アンバー・プロフェッショナル） ── */
+  --navy:     #0f2744;
+  --navy2:    #1a3a5c;
+  --navy3:    #1e4d7b;
+  --bg:       #f0f4f8;
+  --surface:  #ffffff;
+  --surface2: #f1f5f9;
+  --surface3: #e8eef6;
+  --border:   #e2e8f0;
+  --border2:  #cbd5e1;
+  --text:     #0f2744;
+  --text2:    #64748b;
+  --text3:    #94a3b8;
+  --accent:   #0ea5e9;
+  --accent-l: #e0f2fe;
+  --accent-d: #0284c7;
+  --green:    #16a34a;
+  --green-l:  #dcfce7;
+  --red:      #dc2626;
+  --red-l:    #fee2e2;
+  --orange:   #f59e0b;
+  --orange-l: #fffbeb;
+  --shadow-sm: 0 2px 8px rgba(15,39,68,.07);
+  --shadow:    0 4px 24px rgba(15,39,68,.10);
+  --shadow-lg: 0 24px 80px rgba(15,39,68,.25);
   --r:    16px;
-  --r-sm: 10px;
-  --r-xs: 6px;
+  --r-sm: 11px;
+  --r-xs: 7px;
   /* プロフェッショナルなシステムフォントスタック（外部読み込み不要・軽量） */
   --font: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Meiryo", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --mono: ui-monospace, "SF Mono", "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace;
+  --mono: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", "Segoe UI", Roboto, sans-serif;
 }
-html{color-scheme:dark}
+html{color-scheme:light}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{
   background:var(--bg);color:var(--text);
@@ -47,58 +50,56 @@ html,body{
   min-height:100vh;
 }
 body{padding-bottom:90px}
-/* ダークテーマ用の入力フィールド調整 */
-input{color-scheme:dark}
-input[type="date"]::-webkit-calendar-picker-indicator{
-  filter:invert(.7);cursor:pointer;
-}
+/* 入力フィールド調整 */
+input{color-scheme:light}
 input::placeholder{color:var(--text3)}
 
 /* ── HEADER ── */
 .header{
-  background:var(--surface);
-  padding:14px 18px 13px;
+  background:linear-gradient(135deg,#0f2744 0%,#1a3a5c 100%);
+  padding:14px 16px 13px;
   position:sticky;top:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid var(--border);
+  box-shadow:0 2px 20px rgba(15,39,68,.45);
 }
-.header-left{display:flex;align-items:center;gap:12px}
+.header-left{display:flex;align-items:center;gap:11px}
 .header-logo{
   width:38px;height:38px;border-radius:11px;
-  background:linear-gradient(135deg,#3B82F6,#2563EB);
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);
   display:flex;align-items:center;justify-content:center;
-  font-size:18px;font-weight:700;color:#fff;box-shadow:0 2px 10px rgba(59,130,246,.35);
+  font-size:18px;font-weight:900;color:#fff;
 }
 .header-title{
   font-family:var(--font);
-  font-size:17px;font-weight:700;
-  color:var(--text);letter-spacing:-.2px;
+  font-size:16px;font-weight:900;
+  color:#fff;letter-spacing:.3px;
 }
-.header-date{font-size:11px;color:var(--text3);margin-top:1px;font-weight:500}
+.header-date{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;font-weight:500}
 .icon-btn{
-  min-width:44px;height:36px;padding:0 14px;border-radius:10px;
-  background:var(--surface2);border:1px solid var(--border);
+  min-width:44px;height:36px;padding:0 14px;border-radius:9px;
+  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);transition:all .15s;
+  cursor:pointer;font-size:13px;font-weight:700;color:#fff;transition:all .15s;
 }
-.icon-btn:active{transform:scale(.94);background:var(--surface3)}
-.icon-btn:hover{border-color:var(--border2);color:var(--text)}
+.icon-btn:active{transform:scale(.94);background:rgba(255,255,255,.25)}
+.icon-btn:hover{background:rgba(255,255,255,.2)}
 
 /* ── TABS ── */
 .tabs{
   background:var(--surface);
-  border-bottom:1px solid var(--border);
+  border-bottom:2px solid var(--border);
   display:flex;position:sticky;top:64px;z-index:99;
+  box-shadow:0 2px 8px rgba(0,0,0,.04);
 }
 .tab{
-  flex:1;padding:13px 4px 12px;
-  text-align:center;font-size:14px;font-weight:600;
+  flex:1;padding:14px 4px 12px;
+  text-align:center;font-size:14px;font-weight:700;
   color:var(--text3);cursor:pointer;
-  border-bottom:2px solid transparent;
+  border-bottom:3px solid transparent;margin-bottom:-2px;
   transition:all .18s;user-select:none;letter-spacing:.5px;
 }
 .tab:hover{color:var(--text2)}
-.tab.active{color:var(--text);border-bottom-color:var(--accent)}
+.tab.active{color:var(--navy);border-bottom-color:var(--navy)}
 
 /* ── PAGES ── */
 .page{display:none;padding:16px}
@@ -116,7 +117,7 @@ input::placeholder{color:var(--text3)}
   box-shadow:var(--shadow-sm);
   font-weight:500;
 }
-.search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(14,165,233,.1)}
 .search-wrap input::placeholder{color:var(--text3)}
 
 /* ── SECTION LABEL ── */
@@ -128,31 +129,32 @@ input::placeholder{color:var(--text3)}
 }
 
 /* ── 出庫 STOCK CARDS ── */
-.stock-list{display:flex;flex-direction:column;gap:9px}
+.stock-list{display:flex;flex-direction:column;gap:10px}
 .stock-card{
   background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:14px;padding:15px 16px;
+  border:2px solid var(--border);
+  border-radius:16px;padding:15px 16px;
   cursor:pointer;transition:all .15s;
   display:flex;align-items:center;gap:14px;
+  box-shadow:var(--shadow-sm);
 }
-.stock-card:active{transform:scale(.99);background:var(--surface2)}
-.stock-card:hover{border-color:var(--border2);background:var(--surface2)}
-.stock-card.warn{border-color:rgba(245,158,11,.4);background:var(--orange-l)}
+.stock-card:active{transform:scale(.99)}
+.stock-card:hover{border-color:var(--accent)}
+.stock-card.warn{border-color:var(--orange);background:var(--orange-l)}
 .stock-info{flex:1;min-width:0}
 .stock-name{
   font-family:var(--font);
-  font-weight:600;font-size:15px;letter-spacing:-.2px;color:var(--text);
+  font-weight:900;font-size:17px;letter-spacing:0;color:var(--navy);line-height:1.2;
 }
-.stock-sub{font-size:12px;color:var(--text3);margin-top:4px;font-weight:500}
+.stock-sub{font-size:12px;color:var(--text3);margin-top:5px;font-weight:600}
 .stock-qty-block{text-align:right;flex-shrink:0}
 .stock-qty-num{
-  font-family:var(--mono);
-  font-size:23px;font-weight:600;
-  color:var(--green);line-height:1;letter-spacing:-.5px;
+  font-family:var(--font);
+  font-size:26px;font-weight:900;
+  color:var(--navy);line-height:1;letter-spacing:-.5px;
 }
 .stock-qty-num.warn{color:var(--orange)}
-.stock-qty-unit{font-size:11px;color:var(--text3);margin-top:3px;font-weight:600}
+.stock-qty-unit{font-size:12px;color:var(--text2);margin-top:3px;font-weight:600}
 .stock-arrow{
   color:var(--text3);font-size:12px;flex-shrink:0;margin-left:4px;
 }
@@ -194,40 +196,40 @@ input::placeholder{color:var(--text3)}
 .check-btn:active{transform:scale(.95)}
 
 /* ── 入庫 PRODUCT LIST ── */
-.product-list{display:flex;flex-direction:column;gap:8px;margin-bottom:90px}
+.product-list{display:flex;flex-direction:column;gap:10px;margin-bottom:90px}
 .product-row{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:14px;overflow:hidden;
-  transition:border-color .2s;
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:16px;overflow:hidden;
+  transition:border-color .2s;box-shadow:var(--shadow-sm);
 }
 .product-row.open{border-color:var(--accent)}
 .product-row-hd{
-  display:flex;align-items:center;padding:13px 16px;
+  display:flex;align-items:center;padding:14px 16px;
   cursor:pointer;gap:12px;user-select:none;
 }
 .product-row-hd:active{background:var(--surface2)}
 .prod-info{flex:1;min-width:0}
 .prod-name{
   font-family:var(--font);
-  font-weight:600;font-size:14px;letter-spacing:-.1px;
+  font-weight:900;font-size:16px;letter-spacing:0;color:var(--navy);
 }
-.prod-meta{font-size:12px;color:var(--text2);margin-top:3px;font-weight:500}
+.prod-meta{font-size:12px;color:var(--text2);margin-top:4px;font-weight:600}
 .prod-chev{
-  width:24px;height:24px;border-radius:8px;
-  background:var(--surface2);border:1px solid var(--border);
+  width:26px;height:26px;border-radius:8px;
+  background:var(--surface2);border:1.5px solid var(--border);
   display:flex;align-items:center;justify-content:center;
   color:var(--text3);font-size:10px;flex-shrink:0;
   transition:all .2s;
 }
 .product-row.open .prod-chev{
-  background:var(--accent-l);border-color:rgba(59,130,246,.35);
-  color:var(--accent);transform:rotate(90deg);
+  background:var(--navy);border-color:var(--navy);
+  color:#fff;transform:rotate(90deg);
 }
 .cart-tag{
   display:inline-flex;align-items:center;gap:3px;
-  background:var(--accent-l);color:var(--accent);
-  font-size:10px;font-weight:700;padding:2px 7px;
-  border-radius:var(--r-xs);margin-left:6px;vertical-align:middle;
+  background:var(--accent);color:#fff;
+  font-size:10px;font-weight:900;padding:2px 8px;
+  border-radius:20px;margin-left:6px;vertical-align:middle;
 }
 
 /* ── 入庫フォーム ── */
@@ -257,7 +259,7 @@ input::placeholder{color:var(--text3)}
 }
 .in-lot-remain{font-size:12px;color:var(--text2);margin-top:2px;font-weight:500}
 .in-lot-add-btn{
-  background:var(--green-l);border:1.5px solid rgba(16,185,129,.2);
+  background:var(--green-l);border:1.5px solid rgba(22,163,74,.2);
   color:var(--green);padding:7px 12px;border-radius:var(--r-sm);
   font-family:var(--font);font-size:12px;font-weight:700;
   cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;
@@ -266,7 +268,7 @@ input::placeholder{color:var(--text3)}
 
 /* ロット追加インライン */
 .in-lot-add-form{
-  background:var(--green-l);border:1.5px solid rgba(16,185,129,.25);
+  background:var(--green-l);border:1.5px solid rgba(22,163,74,.25);
   border-radius:var(--r-sm);padding:12px;
   display:none;flex-direction:column;gap:8px;
 }
@@ -278,7 +280,7 @@ input::placeholder{color:var(--text3)}
 }
 .in-lot-add-row{display:flex;gap:8px;align-items:center}
 .in-lot-add-row input{
-  flex:1;background:var(--surface);border:1.5px solid rgba(16,185,129,.3);
+  flex:1;background:var(--surface);border:1.5px solid rgba(22,163,74,.3);
   color:var(--text);padding:10px;border-radius:var(--r-sm);
   font-size:20px;font-family:var(--mono);font-weight:600;
   outline:none;text-align:center;-webkit-appearance:none;
@@ -331,9 +333,9 @@ input::placeholder{color:var(--text3)}
   outline:none;-webkit-appearance:none;text-align:right;
   box-shadow:var(--shadow-sm);
 }
-.fg input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.fg input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(14,165,233,.1)}
 .amount-preview{
-  background:var(--accent-l);border:1.5px solid rgba(59,130,246,.15);
+  background:var(--accent-l);border:1.5px solid rgba(14,165,233,.15);
   border-radius:var(--r-sm);padding:11px 14px;
   display:flex;justify-content:space-between;align-items:center;
   margin-bottom:10px;
@@ -351,7 +353,7 @@ input::placeholder{color:var(--text3)}
   padding:12px;border-radius:var(--r-sm);
   font-family:var(--font);font-weight:700;font-size:14px;
   cursor:pointer;transition:all .15s;letter-spacing:.2px;
-  box-shadow:0 2px 8px rgba(59,130,246,.3);
+  box-shadow:0 2px 8px rgba(14,165,233,.3);
 }
 .btn-add:active{transform:scale(.97);background:var(--accent-d)}
 .btn-close{
@@ -398,7 +400,7 @@ input::placeholder{color:var(--text3)}
   transition:all .15s;box-shadow:var(--shadow-sm);
 }
 .lot-card:active{border-color:var(--accent);background:var(--accent-l)}
-.lot-card.selected{border-color:var(--accent);background:var(--accent-l);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.lot-card.selected{border-color:var(--accent);background:var(--accent-l);box-shadow:0 0 0 3px rgba(14,165,233,.1)}
 .lot-card-top{
   display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
 }
@@ -438,7 +440,7 @@ input::placeholder{color:var(--text3)}
   outline:none;-webkit-appearance:none;text-align:center;
   box-shadow:inset 0 1px 3px rgba(0,0,0,.06);
 }
-.out-qty-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.out-qty-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(14,165,233,.1)}
 .out-date-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .out-date-row label{
   font-size:12px;color:var(--text2);font-weight:700;flex-shrink:0;letter-spacing:.2px;
@@ -464,7 +466,7 @@ input::placeholder{color:var(--text3)}
 .btn-full:active{transform:scale(.98)}
 .btn-out{
   background:var(--red);color:#fff;margin-bottom:8px;
-  box-shadow:0 2px 8px rgba(240,88,79,.25);
+  box-shadow:0 2px 8px rgba(220,38,38,.25);
 }
 .btn-cancel{
   background:var(--surface2);color:var(--text2);
@@ -589,7 +591,7 @@ input::placeholder{color:var(--text3)}
 }
 .set-fix-result{
   display:none;margin-top:8px;
-  background:var(--green-l);border:1.5px solid rgba(16,185,129,.2);
+  background:var(--green-l);border:1.5px solid rgba(22,163,74,.2);
   border-radius:var(--r-sm);padding:10px 14px;
   font-size:13px;color:var(--green);font-weight:700;
 }
@@ -620,10 +622,10 @@ input::placeholder{color:var(--text3)}
 }
 .setup-logo{
   width:60px;height:60px;border-radius:18px;
-  background:linear-gradient(135deg,#3B82F6,#2563EB);
+  background:linear-gradient(135deg,#0f2744,#1e4d7b);
   display:flex;align-items:center;justify-content:center;
   font-size:28px;font-weight:700;color:#fff;margin-bottom:16px;
-  box-shadow:0 4px 16px rgba(59,130,246,.3);
+  box-shadow:0 4px 16px rgba(14,165,233,.3);
 }
 .setup-title{
   font-family:var(--font);
@@ -650,7 +652,7 @@ input::placeholder{color:var(--text3)}
   background:linear-gradient(135deg,var(--accent),var(--accent-d));
   color:#fff;border:none;border-radius:var(--r-sm);
   font-family:var(--font);font-weight:700;font-size:15px;
-  cursor:pointer;box-shadow:0 4px 16px rgba(59,130,246,.3);
+  cursor:pointer;box-shadow:0 4px 16px rgba(14,165,233,.3);
   letter-spacing:.2px;
 }
 
@@ -668,7 +670,7 @@ input::placeholder{color:var(--text3)}
 .btn-sm.green{background:var(--green);color:#fff;border-color:transparent}
 .mt8{margin-top:8px}
 .add-prod-btn{
-  background:var(--accent-l);border:1.5px solid rgba(59,130,246,.2);
+  background:var(--accent-l);border:1.5px solid rgba(14,165,233,.2);
   color:var(--accent);padding:7px 12px;border-radius:var(--r-sm);
   font-family:var(--font);font-size:12px;font-weight:700;
   cursor:pointer;letter-spacing:.2px;
@@ -690,7 +692,7 @@ input::placeholder{color:var(--text3)}
 .month-chip.active{
   background:var(--accent);color:#fff;
   border-color:transparent;
-  box-shadow:0 2px 8px rgba(59,130,246,.3);
+  box-shadow:0 2px 8px rgba(14,165,233,.3);
 }
 .month-chip:active{transform:scale(.95)}
 
@@ -698,7 +700,7 @@ input::placeholder{color:var(--text3)}
   background:linear-gradient(135deg,var(--accent),var(--accent-d));
   border-radius:var(--r);padding:16px 18px;
   margin-bottom:14px;color:#fff;
-  box-shadow:0 4px 16px rgba(59,130,246,.3);
+  box-shadow:0 4px 16px rgba(14,165,233,.3);
 }
 .summary-total-label{font-size:12px;opacity:.8;font-weight:600;letter-spacing:.3px}
 .summary-total-value{
@@ -741,7 +743,7 @@ input::placeholder{color:var(--text3)}
   background:var(--accent);color:#fff;
   border-radius:var(--r);padding:12px 16px;
   display:flex;align-items:center;gap:12px;
-  box-shadow:0 4px 24px rgba(59,130,246,.4);
+  box-shadow:0 4px 24px rgba(14,165,233,.4);
   pointer-events:all;cursor:pointer;
   transition:all .2s;
 }
@@ -798,7 +800,7 @@ input::placeholder{color:var(--text3)}
   background:var(--red);color:#fff;
   border-radius:var(--r);padding:12px 16px;
   display:flex;align-items:center;gap:12px;
-  box-shadow:0 4px 24px rgba(240,88,79,.4);
+  box-shadow:0 4px 24px rgba(220,38,38,.4);
   pointer-events:all;cursor:pointer;transition:all .2s;
 }
 .out-cart-inner:active{transform:scale(.98)}
@@ -822,19 +824,18 @@ input::placeholder{color:var(--text3)}
 .toast{
   position:fixed;top:76px;left:50%;
   transform:translateX(-50%) translateY(-8px);
-  background:var(--surface3);color:var(--text);
-  border:1px solid var(--border2);
-  padding:10px 20px;border-radius:100px;
+  background:var(--navy);color:#fff;
+  padding:11px 22px;border-radius:100px;
   font-size:13px;font-weight:700;
   opacity:0;transition:all .25s;pointer-events:none;
   white-space:nowrap;z-index:400;
-  box-shadow:0 8px 28px rgba(0,0,0,.5);
+  box-shadow:0 8px 28px rgba(15,39,68,.35);
   letter-spacing:.2px;
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.ok{background:var(--green);color:#06281E;border-color:transparent}
-.toast.err{background:var(--red);color:#2C0E0C;border-color:transparent}
-.toast.warn{background:var(--orange);color:#2A1B05;border-color:transparent}
+.toast.ok{background:var(--green)}
+.toast.err{background:var(--red)}
+.toast.warn{background:var(--orange)}
 
 /* ── LOADING ── */
 .loading{
@@ -985,7 +986,7 @@ input::placeholder{color:var(--text3)}
   <div class="set-section">
     <div class="set-label">期首在庫</div>
     <div id="openingList"><div class="loading"><div class="spin"></div></div></div>
-    <button class="btn-full btn-out mt8" style="background:var(--green);box-shadow:0 2px 8px rgba(16,185,129,.25);width:100%;padding:13px;border-radius:var(--r-sm);border:none;font-family:var(--font);font-weight:700;font-size:14px;cursor:pointer;margin-top:10px;color:#fff" onclick="saveOpening()">期首在庫を保存</button>
+    <button class="btn-full btn-out mt8" style="background:var(--green);box-shadow:0 2px 8px rgba(22,163,74,.25);width:100%;padding:13px;border-radius:var(--r-sm);border:none;font-family:var(--font);font-weight:700;font-size:14px;cursor:pointer;margin-top:10px;color:#fff" onclick="saveOpening()">期首在庫を保存</button>
     <button class="set-fix-btn" onclick="fixNegativeStock()">マイナス在庫を0に修正</button>
     <div class="set-fix-result" id="fixResult"></div>
   </div>
@@ -1067,7 +1068,7 @@ input::placeholder{color:var(--text3)}
         <input class="np-input" type="text" id="npUnit" placeholder="例: 箱, kg, 本..." />
       </div>
       <div style="padding:0 16px">
-        <button class="btn-full btn-out mt8" style="background:var(--accent);box-shadow:0 2px 8px rgba(59,130,246,.25)" onclick="submitNP()">追加する</button>
+        <button class="btn-full btn-out mt8" style="background:var(--accent);box-shadow:0 2px 8px rgba(14,165,233,.25)" onclick="submitNP()">追加する</button>
         <button class="btn-full btn-cancel mt8" onclick="closeNP()">キャンセル</button>
       </div>
     </div>
@@ -1937,11 +1938,11 @@ function renderSummary() {
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:14px;box-shadow:var(--shadow-sm)">
       <div style="font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">棚卸し確認 — 全商品</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div style="background:var(--green-l);border:1px solid rgba(16,185,129,.2);border-radius:var(--r-sm);padding:10px;text-align:center">
+        <div style="background:var(--green-l);border:1px solid rgba(22,163,74,.2);border-radius:var(--r-sm);padding:10px;text-align:center">
           <div style="font-size:11px;color:var(--green);font-weight:700">入庫累計</div>
           <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);margin-top:4px">+¥${fmtYen(positiveTotal)}</div>
         </div>
-        <div style="background:var(--red-l);border:1px solid rgba(240,88,79,.2);border-radius:var(--r-sm);padding:10px;text-align:center">
+        <div style="background:var(--red-l);border:1px solid rgba(220,38,38,.2);border-radius:var(--r-sm);padding:10px;text-align:center">
           <div style="font-size:11px;color:var(--red);font-weight:700">出庫累計</div>
           <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--red);margin-top:4px">-¥${fmtYen(negativeTotal)}</div>
         </div>
