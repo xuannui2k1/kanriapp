@@ -1062,7 +1062,7 @@ input::placeholder{color:var(--text3)}
 // ============================================================
 // ★ 接続URLは固定。setup画面・手動入力は不要（毎回このURLで起動）
 let API = 'https://script.google.com/macros/s/AKfycbxtEaycJmm08buK0M9VhZIkFaAQ7fQX2ZjYAHNZ2phbGte-ek4gaAIFcKMalRx6plzlgA/exec';
-let stock = [], lots = {};
+let products = [], stock = [], lots = {};
 let openProd = null, selProduct = null, selLot = null;
 
 // ============================================================
@@ -1097,9 +1097,10 @@ async function startApp() {
   document.getElementById('setupPage').style.display = 'none';
   document.getElementById('mainWrap').style.display = 'block';
   document.getElementById('setUrl').value = API;
-  // 起動時は出庫タブのデータ（商品＋在庫）だけ取得して即表示。
+  // 商品リスト(商品コード)と在庫を並列取得。入庫タブは商品リスト基準で表示。
   // 履歴・集計はタブを開いた時に遅延ロード（初期表示を高速化）
-  await loadStock();
+  await Promise.all([loadProducts(), loadStock()]);
+  renderActiveTab();
 }
 
 // ============================================================
@@ -1118,21 +1119,52 @@ async function POST(data) {
 // ============================================================
 // LOAD
 // ============================================================
+// 商品マスター（商品コードシート）から全商品リストを取得。
+// 入庫タブはこれを基準に表示するので、在庫0や新商品も必ず一覧に出る。
+async function loadProducts() {
+  try {
+    const d = await GET('getProducts');
+    products = d.products || [];
+  } catch(e) {
+    toast('商品リスト取得失敗','err');
+  }
+}
+
+// 入庫タブ用: 商品マスター(products)に在庫数(stock)を結合したリストを作る。
+// マスターに在る全商品を返し、在庫データがあればcurrentQty等を補完する。
+function productsWithStock() {
+  const sm = {};
+  stock.forEach(s => { sm[s.code] = s; });
+  return products.map(p => {
+    const s = sm[p.code] || {};
+    return {
+      code: p.code, name: p.name, unit: p.unit,
+      currentQty: s.currentQty || 0,
+      openingQty: s.openingQty || 0,
+      inQty: s.inQty || 0,
+      outQty: s.outQty || 0,
+      lastUnitPrice: s.lastUnitPrice || 0
+    };
+  });
+}
+
 async function loadStock() {
   try {
     const d = await GET('getStock');
     stock = (d.stock || []).filter(s => s.name);
-    // データが更新されたので両タブを再描画対象にする
-    outDirty = true; inDirty = true;
-    // 今アクティブなタブだけ即レンダリング。非アクティブ側は
-    // そのタブを開いた時に goTab がレンダリングする（無駄を省く）
-    if (document.getElementById('page-in').classList.contains('active')) {
-      renderProducts(stock); inDirty = false;
-    } else {
-      renderStock(stock); outDirty = false;
-    }
   } catch(e) {
+    stock = [];
     document.getElementById('stockList').innerHTML = '<div class="loading">データ取得失敗</div>';
+  }
+}
+
+// 現在のデータでアクティブなタブを描画（両タブを再描画対象に戻す）
+function renderActiveTab() {
+  outDirty = true; inDirty = true;
+  if (document.getElementById('page-in').classList.contains('active')) {
+    renderProducts(productsWithStock()); inDirty = false;
+  } else {
+    renderStock(stock); outDirty = false;
   }
 }
 
@@ -1320,6 +1352,7 @@ async function submitOutCart() {
     summaryData = null;
     toast(`${cnt}件の出庫を登録しました`,'ok');
     await loadStock();
+    renderActiveTab();
   } catch(e) {
     toast('送信失敗','err');
   } finally {
@@ -1361,7 +1394,7 @@ async function renderProducts(data) {
 
 // 商品1件のロットを取得してフォーム本体を描画
 async function loadProdForm(code) {
-  const s = stock.find(x => x.code == code);
+  const s = productsWithStock().find(x => x.code == code);
   if (!s) return;
   const form = document.getElementById(`pf_${code}`);
   if (!form) return;
@@ -1503,7 +1536,7 @@ function toggleProd(code) {
 
 function filterIn() {
   const q = document.getElementById('inSearch').value.toLowerCase();
-  renderProducts(stock.filter(s => s.name.toLowerCase().includes(q) || String(s.code).includes(q)));
+  renderProducts(productsWithStock().filter(s => s.name.toLowerCase().includes(q) || String(s.code).includes(q)));
   inDirty = true; // フィルタ表示中。タブ復帰時は全件で再描画させる
 }
 
@@ -1595,7 +1628,15 @@ function closeNP() { document.getElementById('npOverlay').classList.remove('open
 async function submitNP() {
   const name=document.getElementById('npName').value.trim(), unit=document.getElementById('npUnit').value.trim();
   if(!name) return toast('商品名を入力してください','err');
-  try { await POST({action:'addProduct',name,unit}); await loadStock(); closeNP(); toast(`${name} を追加しました`,'ok'); }
+  try {
+    await POST({action:'addProduct',name,unit});
+    // 商品マスターが変わったので商品リストを再取得。在庫も更新。
+    await Promise.all([loadProducts(), loadStock()]);
+    closeNP();
+    goTab('in');          // 入庫タブへ
+    renderActiveTab();    // 新商品を含めて再描画
+    toast(`${name} を追加しました`,'ok');
+  }
   catch(e){ toast('追加失敗','err'); }
 }
 
@@ -1691,6 +1732,7 @@ async function submitInCart() {
     summaryData = null; // 集計キャッシュを無効化（次回開いた時に再取得）
     toast(`${cnt}件の入庫を登録しました`,'ok');
     await loadStock();
+    renderActiveTab();
     goTab('out');
   } catch(e) {
     toast('送信失敗','err');
@@ -1837,7 +1879,7 @@ function goTab(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(`page-${name}`).classList.add('active');
   if (name === 'hist') loadHist();
-  if (name === 'in'  && inDirty)  { renderProducts(stock); inDirty = false; }
+  if (name === 'in'  && inDirty)  { renderProducts(productsWithStock()); inDirty = false; }
   if (name === 'out' && outDirty) { renderStock(stock);    outDirty = false; }
   // 集計タブ: 初回タップ時のみロード（2回目以降はキャッシュ表示で高速）
   if (name === 'sum') { if (!summaryData) loadSummary(); }
