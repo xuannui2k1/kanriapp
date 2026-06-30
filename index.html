@@ -530,6 +530,18 @@ input::placeholder{color:var(--text3)}
   font-family:var(--mono);
   font-size:15px;font-weight:600;text-align:right;flex-shrink:0;
 }
+.day-head{display:flex;align-items:center;gap:10px;margin:18px 2px 10px}
+.day-head:first-child{margin-top:2px}
+.day-date{font-size:13px;font-weight:700;color:var(--navy)}
+.day-line{flex:1;height:1px;background:var(--border)}
+.day-count{font-size:11px;color:var(--text3);font-weight:600}
+.more-wrap{text-align:center;margin-top:8px}
+.more-btn{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--navy);
+  padding:13px;border-radius:var(--r);font-family:var(--font);font-size:14px;font-weight:700;
+  cursor:pointer;box-shadow:var(--shadow-sm)}
+.more-btn:active{background:var(--surface3)}
+.shown-info{font-size:11px;color:var(--text3);margin-top:10px;text-align:center}
+#allHistBtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 .hist-empty{
   text-align:center;padding:60px 20px;color:var(--text2);
 }
@@ -970,8 +982,9 @@ input::placeholder{color:var(--text3)}
   <!-- TAB: 履歴 -->
   <div class="page" id="page-hist">
     <div class="date-row">
-      <input type="date" id="histDate" onchange="loadHist()" />
+      <input type="date" id="histDate" onchange="onHistDate()" />
       <button class="today-btn" onclick="todayHist()">今日</button>
+      <button class="today-btn" id="allHistBtn" onclick="showAllHist()">全期間</button>
     </div>
     <div class="hist-list" id="histList"><div class="loading"><div class="spin"></div>読み込み中...</div></div>
   </div>
@@ -982,13 +995,6 @@ input::placeholder{color:var(--text3)}
   <div class="settings-back">
     <button class="back-btn" onclick="hideSettings()">戻る</button>
     <span class="settings-title">設定</span>
-  </div>
-  <div class="set-section">
-    <div class="set-label">期首在庫</div>
-    <div id="openingList"><div class="loading"><div class="spin"></div></div></div>
-    <button class="btn-full btn-out mt8" style="background:var(--green);box-shadow:0 2px 8px rgba(22,163,74,.25);width:100%;padding:13px;border-radius:var(--r-sm);border:none;font-family:var(--font);font-weight:700;font-size:14px;cursor:pointer;margin-top:10px;color:#fff" onclick="saveOpening()">期首在庫を保存</button>
-    <button class="set-fix-btn" onclick="fixNegativeStock()">マイナス在庫を0に修正</button>
-    <div class="set-fix-result" id="fixResult"></div>
   </div>
   <div class="set-section">
     <div class="set-label">API設定</div>
@@ -1082,7 +1088,7 @@ input::placeholder{color:var(--text3)}
 // ============================================================
 // STATE
 // ============================================================
-let API = localStorage.getItem('apiUrl') || '';
+let API = localStorage.getItem('apiUrl') || 'https://script.google.com/macros/s/AKfycbxtEaycJmm08buK0M9VhZIkFaAQ7fQX2ZjYAHNZ2phbGte-ek4gaAIFcKMalRx6plzlgA/exec';
 let products = [], stock = [], lots = {}, cart = [], cartOpen = false;
 let openProd = null, selProduct = null, selLot = null;
 
@@ -1622,30 +1628,71 @@ async function submitIn() {
 // ============================================================
 // 履歴
 // ============================================================
+// ============================================================
+// 履歴（ページング + 日付グループ表示）
+//  - 日付選択: その日のみ取得
+//  - 全期間: 全件取得し、もっと見るで50件ずつ表示
+//  データは getHistory（コード_v3）が新しい順で返す
+// ============================================================
+const HIST_PAGE = 50;
+let _histAll = [];   // 取得済み全件（フィルタ後）
+let _histShown = 0;  // 表示済み件数
+let _histMode = 'all';
+
 async function loadHist() {
-  const date = document.getElementById('histDate').value;
   const el = document.getElementById('histList');
   el.innerHTML = '<div class="loading"><div class="spin"></div>読み込み中...</div>';
+  const date = document.getElementById('histDate').value;
   try {
-    const d = await GET('getHistory', date ? {date} : {});
-    const h = d.history || [];
-    if (!h.length) { el.innerHTML = '<div class="hist-empty">この日の記録はありません</div>'; return; }
-    el.innerHTML = h.map(r => {
-      const isIn = r.type==='入庫', aQ=Math.abs(r.qty), aA=Math.abs(r.amount);
-      return `<div class="hist-card">
-        <div class="hist-badge ${isIn?'in':'out'}">${r.type}</div>
-        <div class="hist-info">
-          <div class="hist-name">${r.name}</div>
-          <div class="hist-meta">${aQ}${r.unit} × ¥${Number(r.unitPrice).toLocaleString()}</div>
-        </div>
-        <div class="hist-amt" style="color:${isIn?'var(--green)':'var(--red)'}">
-          ${isIn?'+':'-'}¥${aA.toLocaleString()}
-        </div>
-      </div>`;
-    }).join('');
-  } catch(e) { el.innerHTML = '<div class="hist-empty">データ取得失敗</div>'; }
+    const params = (_histMode === 'date' && date) ? { date } : {};
+    const d = await GET('getHistory', params);
+    _histAll = d.history || [];
+    _histShown = 0;
+    if (!_histAll.length) {
+      el.innerHTML = '<div class="hist-empty">記録がありません</div>';
+      return;
+    }
+    renderHist(true);
+  } catch (e) {
+    el.innerHTML = '<div class="hist-empty">データ取得失敗</div>';
+  }
 }
-function todayHist() { document.getElementById('histDate').value = fd(new Date()); loadHist(); }
+
+function renderHist() {
+  const el = document.getElementById('histList');
+  _histShown = Math.min(_histShown + HIST_PAGE, _histAll.length);
+  const visible = _histAll.slice(0, _histShown);
+
+  let html = '', curDate = null;
+  visible.forEach(r => {
+    if (r.date !== curDate) {
+      curDate = r.date;
+      const cnt = visible.filter(x => x.date === curDate).length;
+      const lbl = r.dateLabel || r.date;
+      html += `<div class="day-head"><span class="day-date">${lbl}</span><span class="day-line"></span><span class="day-count">${cnt}件</span></div>`;
+    }
+    const isIn = r.type === '入庫', aQ = Math.abs(r.qty), aA = Math.abs(r.amount);
+    html += `<div class="hist-card">
+      <div class="hist-badge ${isIn?'in':'out'}">${r.type}</div>
+      <div class="hist-info">
+        <div class="hist-name">${r.name}</div>
+        <div class="hist-meta">${aQ}${r.unit} × ¥${Number(r.unitPrice).toLocaleString()}</div>
+      </div>
+      <div class="hist-amt" style="color:${isIn?'var(--green)':'var(--red)'}">${isIn?'+':'-'}¥${aA.toLocaleString()}</div>
+    </div>`;
+  });
+
+  if (_histShown < _histAll.length) {
+    html += `<div class="more-wrap"><button class="more-btn" onclick="moreHist()">もっと見る（残り ${_histAll.length - _histShown}件）</button></div>`;
+  }
+  html += `<div class="shown-info">${_histShown} / ${_histAll.length}件 表示中</div>`;
+  el.innerHTML = html;
+}
+
+function moreHist() { renderHist(); }
+function onHistDate() { _histMode = 'date'; document.getElementById('allHistBtn').classList.remove('active'); loadHist(); }
+function showAllHist() { _histMode = 'all'; document.getElementById('allHistBtn').classList.add('active'); document.getElementById('histDate').value = ''; loadHist(); }
+function todayHist() { _histMode = 'date'; document.getElementById('allHistBtn').classList.remove('active'); document.getElementById('histDate').value = fd(new Date()); loadHist(); }
 
 // ============================================================
 // 設定
@@ -1653,34 +1700,10 @@ function todayHist() { document.getElementById('histDate').value = fd(new Date()
 function showSettings() {
   document.getElementById('mainWrap').style.display='none';
   document.getElementById('settingsPage').classList.add('active');
-  loadOpening();
 }
 function hideSettings() {
   document.getElementById('settingsPage').classList.remove('active');
   document.getElementById('mainWrap').style.display='block';
-}
-async function loadOpening() {
-  const el = document.getElementById('openingList');
-  try {
-    const d = await GET('getOpeningStock');
-    const op = {}; (d.stock||[]).forEach(o => op[o.code]=o);
-    el.innerHTML = products.filter(p=>p.name).map(p => {
-      const o = op[p.code]||{};
-      return `<div class="opening-row">
-        <div class="opening-name">${p.name}</div>
-        <input class="opening-input" type="number" id="op_${p.code}" value="${o.qty||0}" min="0" step="0.1" />
-        <div class="opening-unit">${p.unit}</div>
-      </div>`;
-    }).join('');
-  } catch(e) { el.innerHTML='<div style="color:var(--red);padding:10px">読み込み失敗</div>'; }
-}
-async function saveOpening() {
-  const s = products.filter(p=>p.name).map(p=>({
-    code:p.code, name:p.name,
-    qty:parseFloat(document.getElementById(`op_${p.code}`)?.value)||0, unitPrice:0
-  }));
-  try { await POST({action:'setOpeningStock',stock:s}); toast('期首在庫を保存しました','ok'); await loadStock(); }
-  catch(e) { toast('保存失敗','err'); }
 }
 
 // 新商品
@@ -1734,52 +1757,6 @@ function renderCheckList() {
   }).join('');
 
   panel.innerHTML = `<div class="check-panel"><div class="check-panel-header">要確認 — 在庫0以下の商品（${problems.length}件）</div>${items}</div>`;
-}
-
-async function fixNegativeStock() {
-  // 在庫がマイナスの商品を取得して期首在庫を調整
-  try {
-    const d = await GET('getStock');
-    const negatives = (d.stock || []).filter(s => s.currentQty < 0);
-    
-    if (!negatives.length) {
-      document.getElementById('fixResult').style.display = 'block';
-      document.getElementById('fixResult').textContent = 'マイナス在庫はありません';
-      return;
-    }
-
-    // 現在の期首在庫を取得
-    const op = await GET('getOpeningStock');
-    const openingMap = {};
-    (op.stock || []).forEach(o => { openingMap[o.code] = o; });
-
-    // マイナス分を期首在庫に加算して0にする
-    const newStock = products.filter(p => p.name).map(p => {
-      const current = negatives.find(n => n.code == p.code);
-      const existing = openingMap[p.code] || { qty: 0, unitPrice: 0 };
-      let qty = existing.qty || 0;
-      if (current) {
-        // マイナス分だけ期首在庫を増やして0にする
-        qty = qty + Math.abs(current.currentQty);
-      }
-      return { code: p.code, name: p.name, qty, unitPrice: existing.unitPrice || 0 };
-    });
-
-    await POST({ action: 'setOpeningStock', stock: newStock });
-
-    // 結果表示
-    const names = negatives.map(n => `${n.name}(${fn(n.currentQty)}→0)`).join('、');
-    const resultEl = document.getElementById('fixResult');
-    resultEl.style.display = 'block';
-    resultEl.textContent = `修正完了: ${names}`;
-
-    // 再読み込み
-    await Promise.all([loadProducts(), loadStock()]);
-    loadOpening();
-    toast(`${negatives.length}件のマイナス在庫を修正しました`, 'ok');
-  } catch(e) {
-    toast('修正失敗', 'err');
-  }
 }
 
 
