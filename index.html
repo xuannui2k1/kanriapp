@@ -1028,34 +1028,6 @@ input::placeholder{color:var(--text3)}
   </div>
 </div>
 
-<!-- 出庫確認 MODAL -->
-<div class="overlay" id="confirmOverlay">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-header">
-      <div class="sheet-title" id="cfTitle">出庫確認</div>
-      <div class="sheet-sub">内容を確認して出庫してください</div>
-    </div>
-    <div class="confirm-card">
-      <div class="confirm-row">
-        <span class="confirm-label">出庫数量</span>
-        <span class="confirm-val" id="cfQty" style="color:var(--red)">—</span>
-      </div>
-      <div class="confirm-row">
-        <span class="confirm-label">出庫後の残高</span>
-        <span class="confirm-val" id="cfRemain">—</span>
-      </div>
-    </div>
-    <div id="cfWarn" style="display:none;margin:10px 16px 0;background:var(--orange-l);border:1.5px solid var(--orange);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;color:var(--orange);font-weight:700;text-align:center">
-      出庫後に残高がマイナスになります！
-    </div>
-    <div class="confirm-btns">
-      <button class="btn-full btn-out" id="cfBtn" onclick="confirmOut()">出庫確定</button>
-      <button class="btn-full btn-cancel" onclick="document.getElementById('confirmOverlay').classList.remove('open')">キャンセル</button>
-    </div>
-  </div>
-</div>
-
 <!-- 新商品 MODAL -->
 <div class="overlay" id="npOverlay" onclick="if(event.target===this)closeNP()">
   <div class="sheet">
@@ -1088,8 +1060,9 @@ input::placeholder{color:var(--text3)}
 // ============================================================
 // STATE
 // ============================================================
-let API = localStorage.getItem('apiUrl') || 'https://script.google.com/macros/s/AKfycbxtEaycJmm08buK0M9VhZIkFaAQ7fQX2ZjYAHNZ2phbGte-ek4gaAIFcKMalRx6plzlgA/exec';
-let products = [], stock = [], lots = {}, cart = [], cartOpen = false;
+// ★ 接続URLは固定。setup画面・手動入力は不要（毎回このURLで起動）
+let API = 'https://script.google.com/macros/s/AKfycbxtEaycJmm08buK0M9VhZIkFaAQ7fQX2ZjYAHNZ2phbGte-ek4gaAIFcKMalRx6plzlgA/exec';
+let stock = [], lots = {};
 let openProd = null, selProduct = null, selLot = null;
 
 // ============================================================
@@ -1112,12 +1085,12 @@ function setDates() {
 function connect() {
   const u = document.getElementById('setupUrl').value.trim();
   if (!u) return toast('URLを入力してください','err');
-  API = u; localStorage.setItem('apiUrl', u); startApp();
+  API = u; startApp();
 }
 function updateUrl() {
   const u = document.getElementById('setUrl').value.trim();
   if (!u) return toast('URLを入力してください','err');
-  API = u; localStorage.setItem('apiUrl', u); toast('更新しました','ok');
+  API = u; toast('更新しました','ok');
 }
 
 async function startApp() {
@@ -1126,7 +1099,7 @@ async function startApp() {
   document.getElementById('setUrl').value = API;
   // 起動時は出庫タブのデータ（商品＋在庫）だけ取得して即表示。
   // 履歴・集計はタブを開いた時に遅延ロード（初期表示を高速化）
-  await Promise.all([loadProducts(), loadStock()]);
+  await loadStock();
 }
 
 // ============================================================
@@ -1145,19 +1118,18 @@ async function POST(data) {
 // ============================================================
 // LOAD
 // ============================================================
-async function loadProducts() {
-  try { const d = await GET('getProducts'); products = d.products || []; }
-  catch(e) { toast('商品データ取得失敗','err'); }
-}
-
 async function loadStock() {
   try {
     const d = await GET('getStock');
     stock = (d.stock || []).filter(s => s.name);
-    renderStock(stock); // 出庫タブのみ即時レンダリング
-    // 入庫タブはアクティブな時だけレンダリング（重くなるのを防ぐ）
+    // データが更新されたので両タブを再描画対象にする
+    outDirty = true; inDirty = true;
+    // 今アクティブなタブだけ即レンダリング。非アクティブ側は
+    // そのタブを開いた時に goTab がレンダリングする（無駄を省く）
     if (document.getElementById('page-in').classList.contains('active')) {
-      renderProducts(stock);
+      renderProducts(stock); inDirty = false;
+    } else {
+      renderStock(stock); outDirty = false;
     }
   } catch(e) {
     document.getElementById('stockList').innerHTML = '<div class="loading">データ取得失敗</div>';
@@ -1204,6 +1176,7 @@ function renderStock(data) {
 function filterOut() {
   const q = document.getElementById('outSearch').value.toLowerCase();
   renderStock(stock.filter(s => s.name.toLowerCase().includes(q) || String(s.code).includes(q)));
+  outDirty = true; // フィルタ表示中。タブ復帰時は全件で再描画させる
 }
 
 // ============================================================
@@ -1267,50 +1240,6 @@ function chkWarn() {
   warnBox.classList.toggle('show', over);
   if (over) {
     warnBox.textContent = `在庫不足！残数 ${selLot.remainQty}${selProduct?.unit||''} に対して ${qty}${selProduct?.unit||''} 出庫するとマイナスになります`;
-  }
-}
-
-let isSubmitting = false;
-let pendingOut = null;
-
-function submitOut() {
-  const qty = parseFloat(document.getElementById('outQty').value);
-  if (!qty || qty <= 0) return toast('数量を入力してください','err');
-  if (!selLot || !selProduct) return;
-
-  // 確認モーダルに情報をセット
-  const remain = selLot.remainQty - qty;
-  pendingOut = { qty, date: document.getElementById('outDate').value };
-
-  document.getElementById('cfTitle').textContent = selProduct.name + ' を出庫';
-  document.getElementById('cfQty').textContent = `${qty} ${selProduct.unit}`;
-  document.getElementById('cfRemain').textContent = `${fn(remain)} ${selProduct.unit}`;
-  document.getElementById('cfRemain').style.color = remain < 0 ? 'var(--red)' : 'var(--green)';
-  document.getElementById('cfWarn').style.display = remain < 0 ? 'block' : 'none';
-
-  document.getElementById('confirmOverlay').classList.add('open');
-}
-
-async function confirmOut() {
-  if (isSubmitting || !pendingOut || !selLot || !selProduct) return;
-  isSubmitting = true;
-  const btn = document.getElementById('cfBtn');
-  if (btn) { btn.textContent = '送信中...'; btn.style.opacity = '0.6'; }
-
-  try {
-    await POST({ action:'addEntry', date: pendingOut.date,
-      type:'出庫', code:selProduct.code, name:selProduct.name,
-      unit:selProduct.unit, qty: pendingOut.qty, unitPrice:selLot.price });
-    document.getElementById('confirmOverlay').classList.remove('open');
-    closeOut();
-    toast(`${selProduct.name} ${pendingOut.qty}${selProduct.unit} 出庫完了`,'ok');
-    pendingOut = null;
-    await Promise.all([loadProducts(), loadStock()]);
-  } catch(e) {
-    toast('送信失敗','err');
-  } finally {
-    isSubmitting = false;
-    if (btn) { btn.textContent = '出庫確定'; btn.style.opacity = '1'; }
   }
 }
 
@@ -1390,7 +1319,7 @@ async function submitOutCart() {
     clearOutCart();
     summaryData = null;
     toast(`${cnt}件の出庫を登録しました`,'ok');
-    await Promise.all([loadProducts(), loadStock()]);
+    await loadStock();
   } catch(e) {
     toast('送信失敗','err');
   } finally {
@@ -1413,8 +1342,8 @@ async function renderProducts(data) {
   // ロットは商品を開いた時だけ getLots で取得する（lazy-load）
   lotLoaded = {};
   el.innerHTML = data.map(s => {
-    const inCart = cart.filter(c => c.code == s.code).length;
-    const tag = inCart ? `<span class="cart-tag">×${inCart}</span>` : '';
+    const nInCart = inCart.filter(c => c.code == s.code).length;
+    const tag = nInCart ? `<span class="cart-tag">×${nInCart}</span>` : '';
     return `<div class="product-row" id="pr_${s.code}">
       <div class="product-row-hd" onclick="toggleProd(${s.code})">
         <div class="prod-info">
@@ -1575,57 +1504,11 @@ function toggleProd(code) {
 function filterIn() {
   const q = document.getElementById('inSearch').value.toLowerCase();
   renderProducts(stock.filter(s => s.name.toLowerCase().includes(q) || String(s.code).includes(q)));
+  inDirty = true; // フィルタ表示中。タブ復帰時は全件で再描画させる
 }
 
 // ============================================================
-// CART
-// ============================================================
-function updateCartUI() {
-  const cnt = cart.length, total = cart.reduce((s,c) => s+(c.amount||0), 0);
-  document.getElementById('cartSticky').style.display = 'none'; // カート廃止
-  document.getElementById('cartCount').textContent = `${cnt}件`;
-  document.getElementById('cartTotal').textContent = `合計 ¥${Math.round(total).toLocaleString()}`;
-  document.getElementById('cartDHTitle').textContent = `入庫リスト（${cnt}件）`;
-  document.getElementById('cartItems').innerHTML = cart.map((item,i) =>
-    `<div class="cart-item">
-      <div style="flex:1">
-        <div class="cart-item-name">${item.name}</div>
-        <div class="cart-item-detail">${item.qty}${item.unit} × ¥${item.unitPrice.toLocaleString()}</div>
-      </div>
-      <div class="cart-item-amt">¥${Math.round(item.amount).toLocaleString()}</div>
-      <button class="cart-rm" onclick="removeCart(${i})">×</button>
-    </div>`
-  ).join('');
-}
 
-function toggleCart() {
-  cartOpen = !cartOpen;
-  document.getElementById('cartDetail').classList.toggle('open', cartOpen);
-}
-function removeCart(i) {
-  cart.splice(i,1);
-  if (!cart.length) { cartOpen = false; document.getElementById('cartDetail').classList.remove('open'); }
-  updateCartUI();
-}
-function clearCart() {
-  cart = []; cartOpen = false;
-  document.getElementById('cartDetail').classList.remove('open');
-  updateCartUI();
-}
-
-async function submitIn() {
-  if (!cart.length) return;
-  try {
-    await POST({ action:'addBatchEntry', entries:cart });
-    const cnt = cart.length; clearCart();
-    summaryData = null;
-    toast(`${cnt}件の入庫を登録しました`,'ok');
-    await Promise.all([loadProducts(), loadStock()]);
-    goTab('out');
-  } catch(e) { toast('送信失敗','err'); }
-}
-
-// ============================================================
 // 履歴
 // ============================================================
 // ============================================================
@@ -1712,7 +1595,7 @@ function closeNP() { document.getElementById('npOverlay').classList.remove('open
 async function submitNP() {
   const name=document.getElementById('npName').value.trim(), unit=document.getElementById('npUnit').value.trim();
   if(!name) return toast('商品名を入力してください','err');
-  try { await POST({action:'addProduct',name,unit}); await Promise.all([loadProducts(),loadStock()]); closeNP(); toast(`${name} を追加しました`,'ok'); }
+  try { await POST({action:'addProduct',name,unit}); await loadStock(); closeNP(); toast(`${name} を追加しました`,'ok'); }
   catch(e){ toast('追加失敗','err'); }
 }
 
@@ -1807,7 +1690,7 @@ async function submitInCart() {
     clearInCart();
     summaryData = null; // 集計キャッシュを無効化（次回開いた時に再取得）
     toast(`${cnt}件の入庫を登録しました`,'ok');
-    await Promise.all([loadProducts(), loadStock()]);
+    await loadStock();
     goTab('out');
   } catch(e) {
     toast('送信失敗','err');
@@ -1945,13 +1828,17 @@ function renderSummary() {
     </div>`;
 }
 
+// 出庫/入庫リストの再描画フラグ。データ更新後のみ true にして、
+// タブ切替だけの時は再描画をスキップ（無駄な再レンダリングを防いで高速化）
+let outDirty = true, inDirty = true;
+
 function goTab(name) {
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['out','in','hist','sum'][i]===name));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(`page-${name}`).classList.add('active');
   if (name === 'hist') loadHist();
-  if (name === 'in') renderProducts(stock);
-  if (name === 'out') renderStock(stock);
+  if (name === 'in'  && inDirty)  { renderProducts(stock); inDirty = false; }
+  if (name === 'out' && outDirty) { renderStock(stock);    outDirty = false; }
   // 集計タブ: 初回タップ時のみロード（2回目以降はキャッシュ表示で高速）
   if (name === 'sum') { if (!summaryData) loadSummary(); }
   // カートバーは該当タブでのみ表示（下部の重なりを防ぐ）
