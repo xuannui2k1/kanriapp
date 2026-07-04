@@ -662,6 +662,7 @@ input::placeholder{color:var(--text3)}
 }
 .hist-badge.in{background:var(--green-l);color:var(--green)}
 .hist-badge.out{background:var(--red-l);color:var(--red)}
+.hist-badge.move{background:var(--accent-l);color:var(--accent-d)}
 .hist-info{flex:1;min-width:0}
 .hist-name{
   font-family:var(--font);
@@ -2231,14 +2232,17 @@ function renderHist() {
       const lbl = r.dateLabel || r.date;
       html += `<div class="day-head"><span class="day-date">${lbl}</span><span class="day-line"></span><span class="day-count">${cnt}件</span></div>`;
     }
-    const isIn = r.type === '入庫', aQ = Math.abs(r.qty), aA = Math.abs(r.amount);
+    const isIn = (r.type === '入庫' || r.type === '移動入');
+    const isMove = (r.type === '移動入' || r.type === '移動出');
+    const aQ = Math.abs(r.qty), aA = Math.abs(r.amount);
+    const badgeClass = isMove ? 'move' : (isIn ? 'in' : 'out');
     html += `<div class="hist-card">
-      <div class="hist-badge ${isIn?'in':'out'}">${r.type}</div>
+      <div class="hist-badge ${badgeClass}">${r.type}</div>
       <div class="hist-info">
         <div class="hist-name">${r.name}</div>
         <div class="hist-meta">${aQ}${r.unit} × ¥${Number(r.unitPrice).toLocaleString()}</div>
       </div>
-      <div class="hist-amt" style="color:${isIn?'var(--green)':'var(--red)'}">${isIn?'+':'-'}¥${aA.toLocaleString()}</div>
+      <div class="hist-amt" style="color:${isMove?'var(--accent-d)':(isIn?'var(--green)':'var(--red)')}">${isIn?'+':'-'}¥${aA.toLocaleString()}</div>
     </div>`;
   });
 
@@ -2752,11 +2756,11 @@ async function submitMoveCart(){
   const ok = [], fail = [];
   for (const it of moveCart){
     try {
-      // 1) 移動先へ入庫（メモは移動先の入庫に記録）
-      const rIn = await POST_WH(toWh, { action:'addEntry', date: it.date, type:'入庫', code: it.code, qty: it.qty, unitPrice: it.unitPrice, memo: it.memo || '' });
-      if (!rIn || rIn.success === false) throw new Error('入庫失敗: ' + (rIn?.error||''));
-      // 2) 移動元から出庫（メモなし）
-      const rOut = await POST_WH(fromWh, { action:'addEntry', date: it.date, type:'出庫', code: it.code, qty: it.qty, unitPrice: it.unitPrice });
+      // 1) 移動先へ入庫（種別=移動入、メモは移動先に記録）
+      const rIn = await POST_WH(toWh, { action:'addEntry', date: it.date, type:'移動入', code: it.code, qty: it.qty, unitPrice: it.unitPrice, memo: it.memo || '' });
+      if (!rIn || rIn.success === false) throw new Error('移動入 失敗: ' + (rIn?.error||''));
+      // 2) 移動元から出庫（種別=移動出、メモなし）
+      const rOut = await POST_WH(fromWh, { action:'addEntry', date: it.date, type:'移動出', code: it.code, qty: it.qty, unitPrice: it.unitPrice });
       if (!rOut || rOut.success === false){
         fail.push(`${it.name}: 移動先へ入庫済みだが移動元の出庫に失敗（手動修正が必要）`);
         continue;
