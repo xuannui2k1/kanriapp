@@ -84,6 +84,148 @@ input::placeholder{color:var(--text3)}
 .icon-btn:active{transform:scale(.94);background:rgba(255,255,255,.25)}
 .icon-btn:hover{background:rgba(255,255,255,.2)}
 
+/* ── 倉庫スイッチャー ── */
+.wh-bar{
+  background:var(--surface);
+  display:flex;gap:8px;padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:64px;z-index:100;
+}
+.wh-btn{
+  flex:1;padding:9px 4px;border-radius:var(--r-sm);
+  text-align:center;font-size:12px;font-weight:700;letter-spacing:0;line-height:1.2;
+  border:1.5px solid var(--border2);background:var(--surface);
+  color:var(--text2);cursor:pointer;transition:all .15s;user-select:none;
+}
+.wh-btn:active{transform:scale(.96)}
+.wh-btn.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.wh-btn.all.active{background:var(--accent-d);border-color:var(--accent-d)}
+/* 全社モードはタブバーを少し下げる（wh-barが上にあるため） */
+.tabs.with-wh{top:113px}
+
+/* ── 倉庫移動 ── */
+.move-wrap{padding:4px 0}
+.move-route{
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;
+  background:var(--surface2);border-radius:12px;padding:14px;
+}
+.move-wh{
+  flex:1;text-align:center;padding:12px 6px;border-radius:var(--r-sm);
+  background:var(--surface);border:1.5px solid var(--border2);
+}
+.move-wh-label{font-size:11px;color:var(--text2);font-weight:700;margin-bottom:2px}
+.move-wh-name{font-size:14px;color:var(--navy);font-weight:700}
+.move-arrow{font-size:22px;color:var(--accent-d);flex-shrink:0}
+.move-swap{
+  background:var(--surface);border:1.5px solid var(--border2);color:var(--accent-d);
+  width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0;
+}
+.move-swap:active{transform:scale(.92)}
+.move-hint{font-size:12px;color:var(--text2);margin:0 0 12px;line-height:1.5}
+.move-cart-item-detail .mv{color:var(--accent-d);font-weight:700}
+
+/* ── メモ表示 ── */
+.stock-memo-tag{
+  display:inline-flex;align-items:center;gap:3px;margin-top:5px;
+  background:#fef9e7;border:1px solid #f4d788;color:#8a6d1a;
+  font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;
+}
+.memo-ico{font-style:normal;font-size:11px}
+.memo-entries{margin-bottom:6px}
+.memo-sec-title{
+  display:flex;align-items:center;gap:5px;
+  font-size:13px;font-weight:700;color:#8a6d1a;margin:2px 2px 8px;
+}
+.memo-sec-title .memo-ico{font-size:14px}
+.memo-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.memo-item{
+  background:#fffdf5;border:1.5px solid #f0e2b0;border-left:4px solid #e6b800;
+  border-radius:10px;padding:10px 12px;
+}
+.memo-item-head{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:4px;gap:8px;
+}
+.memo-item-date{font-size:12px;font-weight:700;color:var(--navy)}
+.memo-item-meta{font-size:11px;color:var(--text2);font-weight:600}
+.memo-item-text{font-size:14px;color:#5a4a1a;line-height:1.5;word-break:break-word}
+.memo-item-body{display:flex;align-items:flex-start;gap:8px}
+.memo-item-body .memo-item-text{flex:1}
+.memo-empty-hint{color:var(--text2);font-style:italic;font-size:13px}
+.memo-edit-btn{
+  background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px;
+  flex-shrink:0;opacity:.7;line-height:1;
+}
+.memo-edit-btn:active{transform:scale(.9)}
+.memo-edit-btn.case-edit{align-self:center;margin-left:4px}
+.memo-edit-row{display:flex;gap:6px;align-items:center;width:100%}
+.memo-edit-row input{
+  flex:1;padding:8px 10px;border:1.5px solid var(--accent);border-radius:8px;
+  font-size:14px;font-family:inherit;min-width:0;
+}
+.memo-edit-row input:focus{outline:none}
+.memo-save-btn{
+  background:var(--green);color:#fff;border:none;border-radius:8px;
+  padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;
+}
+.memo-cancel-btn{
+  background:var(--surface2);color:var(--text2);border:none;border-radius:8px;
+  padding:8px 10px;font-size:16px;cursor:pointer;line-height:1;
+}
+.in-cart-item-memo{font-size:12px;color:#8a6d1a;margin-top:3px;font-weight:600;word-break:break-word}
+
+/* ── ケース管理 ── */
+.case-form{padding:4px 0}
+.case-note{
+  display:flex;align-items:center;gap:5px;background:#eef6ff;border:1px solid #bcdcff;
+  color:#1a5a99;font-size:12px;font-weight:600;padding:8px 10px;border-radius:8px;margin-bottom:12px;
+}
+.case-add-row{display:flex;gap:8px;margin-top:10px}
+.case-add-row input{
+  flex:1;padding:11px 12px;border:1.5px solid var(--border2);border-radius:var(--r-sm);
+  font-size:15px;font-family:inherit;
+}
+.case-add-row input:focus{border-color:var(--accent);outline:none}
+.case-add-btn{
+  background:var(--accent-l);color:var(--accent-d);border:1.5px solid var(--accent-d);
+  border-radius:var(--r-sm);padding:0 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;
+}
+.case-add-btn:active{transform:scale(.96)}
+.case-draft-list{margin-top:12px}
+.case-draft-empty{font-size:13px;color:var(--text2);text-align:center;padding:14px;background:var(--surface2);border-radius:8px}
+.case-draft-count{font-size:12px;font-weight:700;color:var(--accent-d);margin-bottom:6px}
+.case-draft-item{
+  display:flex;align-items:center;gap:10px;background:#fffdf5;border:1.5px solid #f0e2b0;
+  border-radius:8px;padding:8px 10px;margin-bottom:6px;
+}
+.case-draft-no{
+  background:#e6b800;color:#fff;font-size:12px;font-weight:700;
+  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.case-draft-memo{flex:1;font-size:14px;color:#5a4a1a;font-weight:600}
+.case-draft-rm{background:none;border:none;color:var(--red);font-size:20px;cursor:pointer;padding:0 4px;line-height:1}
+
+.case-out-head{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;padding:0 2px;
+}
+.case-out-selcount{color:var(--accent-d)}
+.case-out-list{display:flex;flex-direction:column;gap:8px}
+.case-out-item{
+  display:flex;align-items:center;gap:12px;background:var(--surface);
+  border:1.5px solid var(--border2);border-radius:10px;padding:12px;cursor:pointer;transition:all .15s;
+}
+.case-out-item.sel{background:#eafaf1;border-color:var(--green)}
+.case-out-check{
+  width:24px;height:24px;border-radius:6px;border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-size:15px;font-weight:800;color:#fff;
+}
+.case-out-item.sel .case-out-check{background:var(--green);border-color:var(--green)}
+.case-out-info{flex:1}
+.case-out-memo{font-size:15px;font-weight:700;color:var(--navy)}
+.case-out-sub{font-size:12px;color:var(--text2);margin-top:2px}
+
 /* ── TABS ── */
 .tabs{
   background:var(--surface);
@@ -897,11 +1039,18 @@ input::placeholder{color:var(--text3)}
     <div class="icon-btn" onclick="showSettings()">設定</div>
   </div>
 
-  <div class="tabs">
-    <div class="tab active" onclick="goTab('out')">出庫</div>
-    <div class="tab" onclick="goTab('in')">入庫</div>
-    <div class="tab" onclick="goTab('hist')">履歴</div>
-    <div class="tab" onclick="goTab('sum')">集計</div>
+  <div class="wh-bar" id="whBar">
+    <div class="wh-btn active" id="wh-A" onclick="switchWh('A')">板付と若宮水産</div>
+    <div class="wh-btn" id="wh-B" onclick="switchWh('B')">協和冷蔵庫</div>
+    <div class="wh-btn all" id="wh-ALL" onclick="switchWh('ALL')">全社</div>
+  </div>
+
+  <div class="tabs with-wh" id="tabBar">
+    <div class="tab active" id="tabbtn-out" onclick="goTab('out')">出庫</div>
+    <div class="tab" id="tabbtn-in" onclick="goTab('in')">入庫</div>
+    <div class="tab" id="tabbtn-hist" onclick="goTab('hist')">履歴</div>
+    <div class="tab" id="tabbtn-move" onclick="goTab('move')">倉庫移動</div>
+    <div class="tab" id="tabbtn-sum" onclick="goTab('sum')">集計</div>
   </div>
 
   <!-- TAB: 出庫 -->
@@ -988,6 +1137,47 @@ input::placeholder{color:var(--text3)}
     </div>
     <div class="hist-list" id="histList"><div class="loading"><div class="spin"></div>読み込み中...</div></div>
   </div>
+
+  <!-- TAB: 倉庫移動 -->
+  <div class="page" id="page-move">
+    <div class="move-wrap">
+      <div class="move-route">
+        <div class="move-wh">
+          <div class="move-wh-label">移動元</div>
+          <div class="move-wh-name" id="moveFromName">—</div>
+        </div>
+        <button class="move-swap" onclick="swapMoveRoute()" title="入れ替え">⇄</button>
+        <div class="move-wh">
+          <div class="move-wh-label">移動先</div>
+          <div class="move-wh-name" id="moveToName">—</div>
+        </div>
+      </div>
+      <p class="move-hint">移動元の在庫からロット（単価）を選んで移動します。原価（仕入単価）はそのまま引き継がれます。</p>
+      <div class="search-wrap">
+        <input type="text" placeholder="商品名で検索..." oninput="filterMove()" id="moveSearch" />
+      </div>
+      <div class="sec-label"><span id="moveLabelText">移動元の在庫一覧</span></div>
+      <div class="stock-list" id="moveList"><div class="loading"><div class="spin"></div>読み込み中...</div></div>
+    </div>
+  </div>
+
+  <!-- 倉庫移動カートバー -->
+  <div class="in-cart-bar out-cart-bar" id="moveCartBar" style="display:none">
+    <div class="in-cart-detail" id="moveCartDetail">
+      <div class="in-cart-dh">
+        <span class="in-cart-dh-title" id="moveCartDHTitle">移動リスト</span>
+        <button class="btn-sm danger" onclick="clearMoveCart()">クリア</button>
+      </div>
+      <div id="moveCartItems"></div>
+    </div>
+    <div class="in-cart-inner out-cart-inner" onclick="toggleMoveCart()">
+      <div class="in-cart-info">
+        <div class="in-cart-title"><span id="moveCartCount">0件</span> 移動予定</div>
+        <div class="in-cart-sub" id="moveCartRoute">— → —</div>
+      </div>
+      <button class="in-cart-submit out-cart-submit" onclick="event.stopPropagation();submitMoveCart()">移動実行</button>
+    </div>
+  </div>
 </div>
 
 <!-- SETTINGS -->
@@ -1011,6 +1201,7 @@ input::placeholder{color:var(--text3)}
       <div class="sheet-title" id="outSheetName">—</div>
       <div class="sheet-sub">出庫するロットを選択してください</div>
     </div>
+    <div class="memo-entries" id="memoEntries"></div>
     <div class="lot-list" id="lotList"></div>
     <div class="out-form" id="outForm" style="display:none">
       <div class="out-form-title">出庫数量を入力 — <span id="selLotPrice">—</span></div>
@@ -1024,6 +1215,31 @@ input::placeholder{color:var(--text3)}
       <div class="warn-box" id="warnBox">在庫不足！マイナスになります</div>
       <button class="btn-full btn-out" onclick="addOutToCart()">出庫リストに追加</button>
       <button class="btn-full btn-cancel mt8" onclick="closeOut()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- 倉庫移動 LOT MODAL -->
+<div class="overlay" id="moveOverlay" onclick="if(event.target===this)closeMove()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="moveSheetName">—</div>
+      <div class="sheet-sub" id="moveSheetSub">移動するロットを選択してください</div>
+    </div>
+    <div class="lot-list" id="moveLotList"></div>
+    <div class="out-form" id="moveForm" style="display:none">
+      <div class="out-form-title">移動数量を入力 — <span id="moveSelLotPrice">—</span></div>
+      <div class="out-qty-wrap">
+        <input type="number" id="moveQty" placeholder="0" min="0.1" step="0.1" oninput="chkMoveWarn()" />
+      </div>
+      <div class="out-date-row">
+        <label>移動日</label>
+        <input type="date" id="moveDate" />
+      </div>
+      <div class="warn-box" id="moveWarnBox">在庫不足！マイナスになります</div>
+      <button class="btn-full btn-out" onclick="addMoveToCart()">移動リストに追加</button>
+      <button class="btn-full btn-cancel mt8" onclick="closeMove()">キャンセル</button>
     </div>
   </div>
 </div>
@@ -1060,8 +1276,17 @@ input::placeholder{color:var(--text3)}
 // ============================================================
 // STATE
 // ============================================================
-// ★ 接続URLは固定。setup画面・手動入力は不要（毎回このURLで起動）
-let API = 'https://script.google.com/macros/s/AKfycbxtEaycJmm08buK0M9VhZIkFaAQ7fQX2ZjYAHNZ2phbGte-ek4gaAIFcKMalRx6plzlgA/exec';
+// ★ 倉庫レジストリ — 各倉庫のWebアプリURLをここに登録
+//   A = 既存ファイル / B = 新しく複製したファイル（下にURLを貼る）
+// ★ 1ファイル・2シート構成。倉庫の違いは wh パラメータで表す。
+//   URLは共通（1つのGASデプロイ）。下のURLだけ自分のデプロイURLに合わせる。
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxtEaycJmm08buK0M9VhZIkFaAQ7fQX2ZjYAHNZ2phbGte-ek4gaAIFcKMalRx6plzlgA/exec';
+const WAREHOUSES = {
+  A: { name: '板付と若宮水産', wh: 'itaduke' },
+  B: { name: '協和冷蔵庫',     wh: 'kyowa'   }
+};
+let currentWh = 'A';                 // 現在の倉庫キー (A / B / ALL)
+let API = WEB_APP_URL;               // 接続先URL（両倉庫共通）
 let products = [], stock = [], lots = {};
 let openProd = null, selProduct = null, selLot = null;
 
@@ -1106,14 +1331,123 @@ async function startApp() {
 // ============================================================
 // API
 // ============================================================
+// 現在の倉庫の wh 値（ALLのときは板付をデフォルト参照。ALLでは書き込みしない）
+function curWhParam() {
+  return WAREHOUSES[currentWh] ? WAREHOUSES[currentWh].wh : 'itaduke';
+}
+
 async function GET(action, params = {}) {
   const u = new URL(API);
   u.searchParams.set('action', action);
+  u.searchParams.set('wh', curWhParam());
   Object.entries(params).forEach(([k,v]) => u.searchParams.set(k,v));
   return (await fetch(u.toString())).json();
 }
 async function POST(data) {
-  return (await fetch(API, { method:'POST', body:JSON.stringify(data) })).json();
+  return (await fetch(API, { method:'POST', body:JSON.stringify({ ...data, wh: curWhParam() }) })).json();
+}
+
+// 指定倉庫(wh)にGET（全社モード・倉庫移動で特定シートを直接呼ぶ用）
+async function GET_WH(wh, action, params = {}) {
+  const u = new URL(API);
+  u.searchParams.set('action', action);
+  u.searchParams.set('wh', wh);
+  Object.entries(params).forEach(([k,v]) => u.searchParams.set(k,v));
+  return (await fetch(u.toString())).json();
+}
+
+// 指定倉庫(wh)にPOST（倉庫移動で移動元・移動先へ個別に書き込む用）
+async function POST_WH(wh, data) {
+  return (await fetch(API, { method:'POST', body:JSON.stringify({ ...data, wh }) })).json();
+}
+
+// ============================================================
+// 倉庫スイッチャー
+//   A / B → 通常モード（その倉庫に読み書き）
+//   ALL   → 全社モード（在庫・集計を合算。読み取り専用）
+// ============================================================
+let isAllMode = false;
+
+async function switchWh(wh) {
+  currentWh = wh;
+  isAllMode = (wh === 'ALL');
+  ['A','B','ALL'].forEach(k =>
+    document.getElementById('wh-'+k).classList.toggle('active', k === wh));
+
+  // 全社モード: 入庫・出庫・履歴・倉庫移動タブを隠す（書き込み不可のため）
+  ['out','in','hist','move'].forEach(t =>
+    document.getElementById('tabbtn-'+t).style.display = isAllMode ? 'none' : '');
+  // カートバーは全社では出さない
+  document.getElementById('outCartBar').style.display = 'none';
+  document.getElementById('inCartBar').style.display  = 'none';
+  document.getElementById('moveCartBar').style.display = 'none';
+
+  // 倉庫移動: 移動元＝現在の倉庫、移動先＝もう一方（ALL時はデフォルトA→B）
+  if (!isAllMode) {
+    moveFrom = wh;
+    moveTo   = (wh === 'A') ? 'B' : 'A';
+  } else {
+    moveFrom = 'A'; moveTo = 'B';
+  }
+  moveCart = [];
+  updateMoveRoute();
+  updateMoveCartUI();
+
+  if (isAllMode) {
+    summaryData = null;          // 集計キャッシュをリセット
+    goTab('out');                // 全社の初期タブ = 在庫（出庫ページを在庫表示に流用）
+    await loadStockAll();
+  } else {
+    summaryData = null;          // 倉庫が変わったら集計キャッシュ破棄
+    goTab('out');
+    await Promise.all([loadProducts(), loadStock()]);
+    renderActiveTab();
+  }
+}
+
+// 全社: 在庫を2倉庫合算（商品コード基準）
+async function loadStockAll() {
+  const el = document.getElementById('stockList');
+  el.innerHTML = '<div class="loading"><div class="spin"></div>全社集計中...</div>';
+  try {
+    const whs = [WAREHOUSES.A.wh, WAREHOUSES.B.wh];
+    const results = await Promise.all(whs.map(w => GET_WH(w, 'getStock')));
+    const map = {};
+    results.forEach(d => {
+      (d.stock || []).forEach(s => {
+        if (!map[s.code]) {
+          map[s.code] = { ...s };
+        } else {
+          const m = map[s.code];
+          m.openingQty += s.openingQty || 0;
+          m.inQty      += s.inQty || 0;
+          m.outQty     += s.outQty || 0;
+          m.currentQty += s.currentQty || 0;
+          if (s.lastUnitPrice) m.lastUnitPrice = s.lastUnitPrice;
+        }
+      });
+    });
+    stock = Object.values(map);
+    renderStock(stock);
+  } catch(e) {
+    el.innerHTML = '<div class="no-stock-msg">全社在庫の取得に失敗しました</div>';
+  }
+}
+
+// 全社: 集計を2倉庫合算（商品コード×月）
+async function loadSummaryAll() {
+  const content  = document.getElementById('summaryContent');
+  document.getElementById('monthSelector').innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  content.innerHTML  = '<div class="loading"><div class="spin"></div>全社集計中...</div>';
+  try {
+    // 合計シートの数式が板付＋協和を既に合算しているため、1回の取得でよい
+    const d = await GET_WH('itaduke', 'getSummary');
+    if (d.error) throw new Error(d.error);
+    summaryData = d;
+    buildSummaryChips();
+  } catch(e) {
+    content.innerHTML = `<div class="summary-empty">全社集計の取得に失敗<br><small>${e.message}</small></div>`;
+  }
 }
 
 // ============================================================
@@ -1139,6 +1473,7 @@ function productsWithStock() {
     const s = sm[p.code] || {};
     return {
       code: p.code, name: p.name, unit: p.unit,
+      caseManaged: !!p.caseManaged,
       currentQty: s.currentQty || 0,
       openingQty: s.openingQty || 0,
       inQty: s.inQty || 0,
@@ -1192,10 +1527,12 @@ function renderStock(data) {
   el.innerHTML = visible.map(s => {
     const isLow = s.currentQty <= 2;
     const p = s.lastUnitPrice ? `直近単価 ¥${s.lastUnitPrice.toLocaleString()}` : '単価未設定';
+    const memoTag = s.hasMemo ? `<div class="stock-memo-tag"><i class="memo-ico">📝</i>メモあり</div>` : '';
     return `<div class="stock-card ${isLow?'warn':''}" onclick="openOut(${s.code})">
       <div class="stock-info">
         <div class="stock-name">${s.name}</div>
         <div class="stock-sub">${p} · #${s.code}</div>
+        ${memoTag}
       </div>
       <div class="stock-qty-block">
         <div class="stock-qty-num ${isLow?'warn':''}">${fn(s.currentQty)}</div>
@@ -1214,7 +1551,178 @@ function filterOut() {
 // ============================================================
 // 出庫 MODAL — ロット選択
 // ============================================================
+// ============================================================
+// ケース出庫フロー — 残ケースを一覧表示し、複数選択して出庫
+// ============================================================
+let caseOutSel = {};   // lotId → true（選択中）
+let caseOutList = [];   // 現在表示中の残ケース
+
+async function loadCaseOut(code) {
+  caseOutSel = {};
+  const box = document.getElementById('lotList');
+  box.innerHTML = '<div class="loading"><div class="spin"></div>ケース読込中...</div>';
+  try {
+    const d = await GET('getCases', { code });
+    caseOutList = d.cases || [];
+    if (!caseOutList.length) {
+      box.innerHTML = '<div class="lot-empty">出庫できるケースがありません</div>';
+      return;
+    }
+    renderCaseOut();
+  } catch(e) {
+    box.innerHTML = '<div class="lot-empty">ケース取得失敗</div>';
+  }
+}
+
+function renderCaseOut() {
+  const box = document.getElementById('lotList');
+  const unit = selProduct.unit;
+  const selCount = Object.keys(caseOutSel).filter(k => caseOutSel[k]).length;
+  box.innerHTML = `
+    <div class="case-out-head">
+      <span>残ケース ${caseOutList.length}件</span>
+      <span class="case-out-selcount">${selCount ? selCount + '件 選択中' : 'タップで選択'}</span>
+    </div>
+    <div class="case-out-list">
+      ${caseOutList.map(c => `
+        <div class="case-out-item ${caseOutSel[c.lotId] ? 'sel' : ''}" onclick="toggleCaseOut('${c.lotId}')">
+          <div class="case-out-check">${caseOutSel[c.lotId] ? '✓' : ''}</div>
+          <div class="case-out-info">
+            <div class="case-out-memo" id="met_${c.rowNum}">${c.memo ? escapeHtml(c.memo) : '<span class="memo-empty-hint">（メモなし）</span>'}</div>
+            <div class="case-out-sub">${c.dateLabel || c.date} · ¥${Number(c.unitPrice).toLocaleString()}</div>
+          </div>
+          <button class="memo-edit-btn case-edit" onclick="event.stopPropagation();startEditMemo(${c.rowNum},${selProduct.code},'cases')" title="メモ編集">✏️</button>
+        </div>`).join('')}
+    </div>
+    <div class="out-date-row" style="margin-top:12px">
+      <label>出庫日</label>
+      <input type="date" id="caseOutDate" value="${fd(new Date())}" />
+    </div>
+    <button class="btn-full btn-out" onclick="submitCaseOut()">
+      選択したケースを出庫${selCount ? '（'+selCount+'件）' : ''}
+    </button>`;
+}
+
+function toggleCaseOut(lotId) {
+  caseOutSel[lotId] = !caseOutSel[lotId];
+  renderCaseOut();
+}
+
+async function submitCaseOut() {
+  const chosen = caseOutList.filter(c => caseOutSel[c.lotId]);
+  if (!chosen.length) return toast('ケースを選択してください','err');
+  const date = document.getElementById('caseOutDate')?.value || fd(new Date());
+  if (!confirm(`${chosen.length}ケースを出庫します。よろしいですか？`)) return;
+
+  const btn = document.querySelector('#lotList .btn-out');
+  if (btn) { btn.textContent = '出庫中...'; btn.disabled = true; }
+
+  // 各ケースを出庫（数量1・同lotId・同単価）
+  const entries = chosen.map(c => ({
+    date, type:'出庫', code: selProduct.code, name: selProduct.name,
+    unit: selProduct.unit, qty: 1, unitPrice: c.unitPrice,
+    lotId: c.lotId, memo: c.memo || ''
+  }));
+  try {
+    await POST({ action:'addBatchEntry', entries });
+    summaryData = null;
+    toast(`${chosen.length}ケースを出庫しました`,'ok');
+    closeOut();
+    await loadStock();
+    renderActiveTab();
+  } catch(e) {
+    toast('出庫失敗','err');
+    if (btn) { btn.textContent = '選択したケースを出庫'; btn.disabled = false; }
+  }
+}
+
+// 入庫メモ明細を取得して、出庫モーダル上部に表示（表示専用・在庫計算には無関係）
+async function loadMemoEntries(code, unit) {
+  const box = document.getElementById('memoEntries');
+  if (!box) return;
+  box.innerHTML = '';
+  try {
+    const d = await GET('getInEntries', { code });
+    const entries = d.entries || [];
+    if (!entries.length) { box.innerHTML = ''; return; }
+    const withMemo = entries.filter(e => e.memo && e.memo.trim() !== '').length;
+    box.innerHTML = `
+      <div class="memo-sec-title"><i class="memo-ico">📝</i>入庫メモ（${withMemo}件）</div>
+      <div class="memo-list">
+        ${entries.map(e => `
+          <div class="memo-item" id="me_${e.rowNum}">
+            <div class="memo-item-head">
+              <span class="memo-item-date">${e.dateLabel || e.date}</span>
+              <span class="memo-item-meta">${fn(e.qty)}${unit} · ¥${Number(e.unitPrice).toLocaleString()}</span>
+            </div>
+            <div class="memo-item-body">
+              <div class="memo-item-text" id="met_${e.rowNum}">${e.memo ? escapeHtml(e.memo) : '<span class="memo-empty-hint">メモなし</span>'}</div>
+              <button class="memo-edit-btn" onclick="startEditMemo(${e.rowNum},${code},'reload')" title="編集">✏️</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+  } catch(e) {
+    box.innerHTML = '';
+  }
+}
+
+// メモ編集モードを開く（rowNum行のメモをインライン編集）
+let _editMemoCtx = {};
+function startEditMemo(rowNum, code, after) {
+  const textEl = document.getElementById(`met_${rowNum}`);
+  if (!textEl) return;
+  const current = textEl.querySelector('.memo-empty-hint') ? '' : textEl.textContent;
+  _editMemoCtx[rowNum] = { code, after };
+  textEl.innerHTML = `
+    <div class="memo-edit-row">
+      <input type="text" id="mei_${rowNum}" value="${escapeHtml(current).replace(/"/g,'&quot;')}" maxlength="100" placeholder="メモを入力" />
+      <button class="memo-save-btn" onclick="saveEditMemo(${rowNum})">保存</button>
+      <button class="memo-cancel-btn" onclick="cancelEditMemo(${rowNum})">×</button>
+    </div>`;
+  const inp = document.getElementById(`mei_${rowNum}`);
+  inp.focus();
+  inp.onkeydown = (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); saveEditMemo(rowNum); } };
+}
+
+async function saveEditMemo(rowNum) {
+  const ctx = _editMemoCtx[rowNum] || {};
+  const inp = document.getElementById(`mei_${rowNum}`);
+  if (!inp) return;
+  const memo = inp.value.trim();
+  inp.disabled = true;
+  try {
+    const r = await POST({ action:'updateMemo', rowNum, code: ctx.code, memo });
+    if (r && r.success === false) throw new Error(r.error || '更新失敗');
+    toast('メモを更新しました','ok');
+    // 再表示
+    if (ctx.after === 'reload' && selProduct) {
+      await loadMemoEntries(selProduct.code, selProduct.unit);
+    } else if (ctx.after === 'cases' && selProduct) {
+      await loadCaseOut(selProduct.code);
+    }
+  } catch(e) {
+    toast('メモ更新失敗: ' + e.message,'err');
+    inp.disabled = false;
+  }
+}
+
+function cancelEditMemo(rowNum) {
+  if (selProduct) {
+    // 単純に再読込して元に戻す
+    const ctx = _editMemoCtx[rowNum] || {};
+    if (ctx.after === 'cases') loadCaseOut(selProduct.code);
+    else loadMemoEntries(selProduct.code, selProduct.unit);
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
 async function openOut(code) {
+  if (isAllMode) { toast('全社モードは閲覧のみです。倉庫A/Bを選んでください','err'); return; }
   selProduct = stock.find(s => s.code == code);
   if (!selProduct) return;
   document.getElementById('outSheetName').textContent = selProduct.name;
@@ -1225,6 +1733,17 @@ async function openOut(code) {
   document.getElementById('outQty').value = '';
   document.getElementById('warnBox').classList.remove('show');
   selLot = null;
+
+  // ★ケース管理商品は専用フロー（ケースを選んで出庫）
+  if (selProduct.caseManaged) {
+    document.getElementById('memoEntries').innerHTML = '';
+    document.querySelector('#outOverlay .sheet-sub').textContent = '出庫するケースを選択してください';
+    await loadCaseOut(code);
+    return;
+  }
+  document.querySelector('#outOverlay .sheet-sub').textContent = '出庫するロットを選択してください';
+  // メモ付き入庫明細を並行取得して、ロット一覧の上に表示
+  loadMemoEntries(code, selProduct.unit);
   try {
     const d = await GET('getLots', { code });
     const lotArr = d.lots || [];
@@ -1400,6 +1919,9 @@ async function loadProdForm(code) {
   if (!form) return;
   const today = fd(new Date());
 
+  // ★ケース管理商品は専用フォーム（複数ケースを一度に入庫）
+  if (s.caseManaged) { renderCaseInForm(code, s, today); return; }
+
   // ロット未取得なら取得
   if (!lotLoaded[code]) {
     try {
@@ -1464,6 +1986,10 @@ async function loadProdForm(code) {
           <span>金額</span>
           <span id="pa_${code}">¥ —</span>
         </div>
+        <div class="fg" style="margin-top:8px">
+          <label>メモ（任意）</label>
+          <input type="text" id="pm_${code}" placeholder="例: 特大サイズ / A社仕入 など" maxlength="100" />
+        </div>
         <div class="form-btns">
           <button class="btn-add" onclick="addNewLot(${code},'${s.name}','${s.unit}')">＋ カートに追加</button>
           <button class="btn-close" onclick="toggleProd(${code})">閉じる</button>
@@ -1504,17 +2030,115 @@ function calcAmt(code) {
   document.getElementById(`pa_${code}`).textContent = (q && p) ? `¥${Math.round(q*p).toLocaleString()}` : '¥ —';
 }
 
+// ============================================================
+// ケース管理商品の入庫フォーム（複数ケースを一度に）
+//   1つの日付・単価を共通に、ケースを何個でも追加できる。
+//   各ケース = 数量1・独自lotId・メモ（例「12匹」）。
+// ============================================================
+let caseDraft = {};   // code → [{memo}]  一時的な入力中ケース
+
+function renderCaseInForm(code, s, today) {
+  const form = document.getElementById(`pf_${code}`);
+  if (!caseDraft[code]) caseDraft[code] = [];
+  const meta = document.querySelector(`#pr_${code} .prod-meta`);
+  if (meta) meta.textContent = `在庫 ${fn(s.currentQty)}${s.unit}（ケース管理）`;
+
+  form.innerHTML = `
+    <div class="case-form">
+      <div class="case-note"><i class="memo-ico">📦</i>ケース管理商品：1ケースずつ登録します（数量は各1）</div>
+      <div class="form-date-row">
+        <label>入庫日</label>
+        <input type="date" id="cd_${code}" value="${today}" />
+      </div>
+      <div class="fg">
+        <label>単価（円 / ケース）</label>
+        <input type="number" id="cp_${code}" placeholder="例: 42000" min="0" step="1" />
+      </div>
+      <div class="case-add-row">
+        <input type="text" id="cm_${code}" placeholder="メモ（例: 12匹）" maxlength="100"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addCaseDraft(${code});}" />
+        <button class="case-add-btn" onclick="addCaseDraft(${code})">＋ ケース追加</button>
+      </div>
+      <div class="case-draft-list" id="cdl_${code}"></div>
+      <div class="form-btns">
+        <button class="btn-add" onclick="commitCasesToCart(${code},'${s.name}','${s.unit}')">カートに追加</button>
+        <button class="btn-close" onclick="toggleProd(${code})">閉じる</button>
+      </div>
+    </div>`;
+  renderCaseDraft(code);
+}
+
+function addCaseDraft(code) {
+  const memoEl = document.getElementById(`cm_${code}`);
+  const memo = (memoEl?.value || '').trim();
+  if (!caseDraft[code]) caseDraft[code] = [];
+  caseDraft[code].push({ memo });
+  memoEl.value = '';
+  memoEl.focus();
+  renderCaseDraft(code);
+}
+
+function removeCaseDraft(code, i) {
+  caseDraft[code].splice(i, 1);
+  renderCaseDraft(code);
+}
+
+function renderCaseDraft(code) {
+  const box = document.getElementById(`cdl_${code}`);
+  if (!box) return;
+  const list = caseDraft[code] || [];
+  if (!list.length) { box.innerHTML = '<div class="case-draft-empty">まだケースがありません。上で追加してください。</div>'; return; }
+  box.innerHTML = `<div class="case-draft-count">追加予定 ${list.length} ケース</div>` +
+    list.map((c,i) => `
+      <div class="case-draft-item">
+        <span class="case-draft-no">${i+1}</span>
+        <span class="case-draft-memo">${c.memo ? escapeHtml(c.memo) : '（メモなし）'}</span>
+        <button class="case-draft-rm" onclick="removeCaseDraft(${code},${i})">×</button>
+      </div>`).join('');
+}
+
+// 一意なロットIDを生成（時刻ベース＋連番＋乱数）
+let _lotSeq = 0;
+function genLotId() {
+  _lotSeq++;
+  return 'L' + Date.now().toString(36) + '-' + _lotSeq + Math.floor(Math.random()*36).toString(36);
+}
+
+function commitCasesToCart(code, name, unit) {
+  const list = caseDraft[code] || [];
+  if (!list.length) return toast('ケースを追加してください','err');
+  const price = parseFloat(document.getElementById(`cp_${code}`)?.value);
+  const date = document.getElementById(`cd_${code}`)?.value || fd(new Date());
+  if (!price || price <= 0) return toast('単価を入力してください','err');
+
+  list.forEach(c => {
+    inCart.push({
+      date, type:'入庫', code, name, unit,
+      qty: 1, unitPrice: price, amount: price,
+      memo: c.memo || '', lotId: genLotId(), isCase: true
+    });
+  });
+  const n = list.length;
+  caseDraft[code] = [];
+  renderCaseDraft(code);
+  document.getElementById(`cp_${code}`).value = '';
+  updateInCartUI();
+  toast(`${name} ${n}ケースをカートに追加`,'ok');
+}
+
 function addNewLot(code, name, unit) {
   const qty = parseFloat(document.getElementById(`pq_${code}`)?.value);
   const unitPrice = parseFloat(document.getElementById(`pp_${code}`)?.value);
   const date = document.getElementById(`pd_${code}`)?.value || fd(new Date());
+  const memo = (document.getElementById(`pm_${code}`)?.value || '').trim();
   if (!qty || qty <= 0) return toast('数量を入力してください','err');
   if (!unitPrice || unitPrice <= 0) return toast('単価を入力してください','err');
-  inCart.push({ date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice });
+  inCart.push({ date, type:'入庫', code, name, unit, qty, unitPrice, amount: qty * unitPrice, memo });
   // フォームをリセット
   document.getElementById(`pq_${code}`).value = '';
   document.getElementById(`pp_${code}`).value = '';
   document.getElementById(`pa_${code}`).textContent = '¥ —';
+  const mEl = document.getElementById(`pm_${code}`); if (mEl) mEl.value = '';
   updateInCartUI();
   toast(`${name} をカートに追加`,'ok');
 }
@@ -1696,6 +2320,7 @@ function updateInCartUI() {
       <div class="in-cart-item-info">
         <div class="in-cart-item-name">${item.name}</div>
         <div class="in-cart-item-detail">${item.qty}${item.unit} × ¥${fmtYen(item.unitPrice)}</div>
+        ${item.memo ? `<div class="in-cart-item-memo">📝 ${escapeHtml(item.memo)}</div>` : ''}
       </div>
       <div class="in-cart-item-amt">¥${fmtYen(item.amount)}</div>
       <button class="in-cart-rm" onclick="removeInCart(${i})">×</button>
@@ -1758,32 +2383,36 @@ async function loadSummary() {
     const d = await GET('getSummary');
     if (d.error) throw new Error(d.error);
     summaryData = d;
-
-    // 月チップを作成（データがある月のみ）
-    const activeMonths = d.months.filter(m => 
-      d.items.some(item => item.months[m] !== 0)
-    );
-
-    if (!activeMonths.length) {
-      selector.innerHTML = '';
-      content.innerHTML = '<div class="summary-empty">データがありません</div>';
-      return;
-    }
-
-    // デフォルト: 合計表示
-    selMonth = '合計';
-
-    // 「合計」チップ + 各月チップ
-    selector.innerHTML = 
-      `<div class="month-chip ${selMonth === '合計' ? 'active' : ''}" onclick="selectMonth('合計')" style="background:${selMonth==='合計'?'var(--accent)':'var(--surface)'};color:${selMonth==='合計'?'#fff':'var(--text2)'};border-color:${selMonth==='合計'?'transparent':'var(--border)'}">合計</div>` +
-      activeMonths.map(m =>
-        `<div class="month-chip ${m === selMonth ? 'active' : ''}" onclick="selectMonth('${m}')">${m}</div>`
-      ).join('');
-
-    renderSummary();
+    buildSummaryChips();
   } catch(e) {
     content.innerHTML = `<div class="summary-empty">データ取得失敗<br><small>${e.message}</small></div>`;
   }
+}
+
+// 月チップの生成 + 初期描画（単一倉庫・全社の両方から呼ぶ）
+function buildSummaryChips() {
+  const selector = document.getElementById('monthSelector');
+  const content  = document.getElementById('summaryContent');
+  if (!summaryData) return;
+
+  const activeMonths = summaryData.months.filter(m =>
+    summaryData.items.some(item => item.months[m] !== 0)
+  );
+
+  if (!activeMonths.length) {
+    selector.innerHTML = '';
+    content.innerHTML = '<div class="summary-empty">データがありません</div>';
+    return;
+  }
+
+  selMonth = '合計';
+  selector.innerHTML =
+    `<div class="month-chip ${selMonth === '合計' ? 'active' : ''}" onclick="selectMonth('合計')" style="background:${selMonth==='合計'?'var(--accent)':'var(--surface)'};color:${selMonth==='合計'?'#fff':'var(--text2)'};border-color:${selMonth==='合計'?'transparent':'var(--border)'}">合計</div>` +
+    activeMonths.map(m =>
+      `<div class="month-chip ${m === selMonth ? 'active' : ''}" onclick="selectMonth('${m}')">${m}</div>`
+    ).join('');
+
+  renderSummary();
 }
 
 function selectMonth(month) {
@@ -1819,7 +2448,8 @@ function renderSummary() {
   }
 
   const sign = monthTotal >= 0 ? '+' : '';
-  const headerLabel = isTotal ? '全期間 入出庫金額合計' : `${selMonth} 入出庫金額`;
+  const whPrefix = isAllMode ? '全社 ' : '';
+  const headerLabel = whPrefix + (isTotal ? '全期間 入出庫金額合計' : `${selMonth} 入出庫金額`);
   const headerSub = isTotal
     ? `入庫累計 +¥${fmtYen(positiveTotal)} ／ 出庫累計 -¥${fmtYen(negativeTotal)}`
     : `入庫 +¥${fmtYen(positiveTotal)} ／ 出庫 -¥${fmtYen(negativeTotal)}`;
@@ -1875,18 +2505,248 @@ function renderSummary() {
 let outDirty = true, inDirty = true;
 
 function goTab(name) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['out','in','hist','sum'][i]===name));
+  ['out','in','hist','move','sum'].forEach(n => {
+    const btn = document.getElementById('tabbtn-'+n);
+    if (btn) btn.classList.toggle('active', n === name);
+  });
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(`page-${name}`).classList.add('active');
+
+  if (isAllMode) {
+    // 全社モード: 出庫ページを「在庫（合算）」ビューとして流用、集計は合算版をロード
+    if (name === 'out') { document.getElementById('outLabelText').textContent = '全社在庫（合算）'; if (!stock.length) loadStockAll(); }
+    if (name === 'sum') { if (!summaryData) loadSummaryAll(); }
+    // 全社では書き込み系タブは表示されないので早期リターン（カートも出さない）
+    document.getElementById('outCartBar').style.display = 'none';
+    document.getElementById('inCartBar').style.display  = 'none';
+    document.getElementById('moveCartBar').style.display = 'none';
+    return;
+  }
+
   if (name === 'hist') loadHist();
   if (name === 'in'  && inDirty)  { renderProducts(productsWithStock()); inDirty = false; }
   if (name === 'out' && outDirty) { renderStock(stock);    outDirty = false; }
+  if (name === 'move') loadMoveStock();
   // 集計タブ: 初回タップ時のみロード（2回目以降はキャッシュ表示で高速）
   if (name === 'sum') { if (!summaryData) loadSummary(); }
   // カートバーは該当タブでのみ表示（下部の重なりを防ぐ）
   document.getElementById('outCartBar').style.display = (name === 'out' && outCart.length) ? 'block' : 'none';
   document.getElementById('inCartBar').style.display  = (name === 'in'  && inCart.length)  ? 'block' : 'none';
+  document.getElementById('moveCartBar').style.display = (name === 'move' && moveCart.length) ? 'block' : 'none';
 }
+// ============================================================
+// 倉庫移動 — ある倉庫から別の倉庫へ在庫を移す
+//   移動元で 出庫 / 移動先で 入庫 を同単価・同数量で記録。
+//   原価（仕入単価）はロットの単価をそのまま引き継ぐ。
+// ============================================================
+let moveFrom = 'A', moveTo = 'B';
+let moveStock = [];            // 移動元の在庫
+let moveSelProduct = null, moveSelLot = null;
+let moveCart = [];
+let moveCartOpen = false;
+let isMoveSubmitting = false;
+
+function whName(k){ return WAREHOUSES[k]?.name || k; }
+
+function updateMoveRoute(){
+  document.getElementById('moveFromName').textContent = whName(moveFrom);
+  document.getElementById('moveToName').textContent   = whName(moveTo);
+  document.getElementById('moveCartRoute').textContent = `${whName(moveFrom)} → ${whName(moveTo)}`;
+}
+
+// 移動元↔移動先 入れ替え（カートがあれば確認）
+function swapMoveRoute(){
+  if (moveCart.length && !confirm('移動リストをクリアして方向を入れ替えますか？')) return;
+  [moveFrom, moveTo] = [moveTo, moveFrom];
+  moveCart = [];
+  updateMoveRoute();
+  updateMoveCartUI();
+  loadMoveStock();
+}
+
+// 移動元倉庫の在庫を読む
+async function loadMoveStock(){
+  updateMoveRoute();
+  const el = document.getElementById('moveList');
+  document.getElementById('moveLabelText').textContent = `${whName(moveFrom)} の在庫一覧`;
+  el.innerHTML = '<div class="loading"><div class="spin"></div>読み込み中...</div>';
+  try {
+    const d = await GET_WH(WAREHOUSES[moveFrom].wh, 'getStock');
+    moveStock = (d.stock || []).filter(s => s.currentQty > 0);
+    renderMoveStock(moveStock);
+  } catch(e){
+    el.innerHTML = '<div class="no-stock-msg">在庫の取得に失敗しました</div>';
+  }
+}
+
+function renderMoveStock(list){
+  const el = document.getElementById('moveList');
+  if (!list.length){ el.innerHTML = '<div class="no-stock-msg">在庫のある商品がありません</div>'; return; }
+  el.innerHTML = list.map(s => {
+    const isLow = s.currentQty <= 0;
+    return `<div class="stock-card" onclick="openMove(${s.code})">
+      <div class="stock-info">
+        <div class="stock-name">${s.name}</div>
+        <div class="stock-sub">${whName(moveFrom)} · #${s.code}</div>
+      </div>
+      <div class="stock-qty-block">
+        <div class="stock-qty-num">${fn(s.currentQty)}</div>
+        <div class="stock-qty-unit">${s.unit}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterMove(){
+  const q = (document.getElementById('moveSearch').value || '').trim().toLowerCase();
+  renderMoveStock(!q ? moveStock : moveStock.filter(s => s.name.toLowerCase().includes(q)));
+}
+
+// ロット選択モーダルを開く（移動元のロットを取得）
+async function openMove(code){
+  moveSelProduct = moveStock.find(s => s.code == code);
+  if (!moveSelProduct) return;
+  document.getElementById('moveSheetName').textContent = moveSelProduct.name;
+  document.getElementById('moveSheetSub').textContent = `${whName(moveFrom)} → ${whName(moveTo)}：移動するロットを選択`;
+  document.getElementById('moveForm').style.display = 'none';
+  document.getElementById('moveLotList').innerHTML = '<div class="loading"><div class="spin"></div>読み込み中...</div>';
+  document.getElementById('moveOverlay').classList.add('open');
+  document.getElementById('moveDate').value = fd(new Date());
+  document.getElementById('moveQty').value = '';
+  document.getElementById('moveWarnBox').classList.remove('show');
+  moveSelLot = null;
+  try {
+    const d = await GET_WH(WAREHOUSES[moveFrom].wh, 'getLots', { code });
+    const lotArr = d.lots || [];
+    if (!lotArr.length){ document.getElementById('moveLotList').innerHTML = '<div class="lot-empty">在庫ロットがありません</div>'; return; }
+    document.getElementById('moveLotList').innerHTML = lotArr.map((l,i) => {
+      const queued = moveCart.filter(c => c.code == code && c.unitPrice == l.unitPrice).reduce((s,c)=>s+c.qty,0);
+      const remain = fn(l.remainQty - queued);
+      const remainAmt = Math.round((l.remainQty - queued) * l.unitPrice);
+      const queuedNote = queued ? `<span style="font-size:11px;color:var(--accent);font-weight:700"> （リスト内 -${fn(queued)}${moveSelProduct.unit}）</span>` : '';
+      return `<div class="lot-card" id="mlc_${i}" onclick="selMoveLot(${i},${l.unitPrice},${l.remainQty - queued})">
+        <div class="lot-card-top">
+          <div class="lot-price">¥${l.unitPrice.toLocaleString()}<span style="font-size:12px;color:var(--text2)"> /単価</span></div>
+          <div class="lot-badge">${remain} ${moveSelProduct.unit}</div>
+        </div>
+        <div class="lot-card-row">
+          <div class="lot-stat"><div class="lot-stat-label">残数量</div><div class="lot-stat-val">${remain} ${moveSelProduct.unit}${queuedNote}</div></div>
+          <div class="lot-stat"><div class="lot-stat-label">残金額</div><div class="lot-stat-val">¥${remainAmt.toLocaleString()}</div></div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){
+    document.getElementById('moveLotList').innerHTML = '<div class="lot-empty">データ取得失敗</div>';
+  }
+}
+
+function selMoveLot(idx, price, remainQty){
+  moveSelLot = { price, remainQty };
+  document.getElementById('moveSelLotPrice').textContent = `¥${price.toLocaleString()} /単価`;
+  document.getElementById('moveForm').style.display = 'block';
+  document.getElementById('moveQty').focus();
+  document.querySelectorAll('#moveLotList .lot-card').forEach((c,i)=>c.classList.toggle('selected', i===idx));
+  setTimeout(()=>document.getElementById('moveForm').scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+
+function chkMoveWarn(){
+  const qty = parseFloat(document.getElementById('moveQty').value) || 0;
+  const over = moveSelLot && qty > moveSelLot.remainQty;
+  const box = document.getElementById('moveWarnBox');
+  box.classList.toggle('show', over);
+  if (over) box.textContent = `在庫不足！残数 ${fn(moveSelLot.remainQty)}${moveSelProduct?.unit||''} を超えています`;
+}
+
+function closeMove(){ document.getElementById('moveOverlay').classList.remove('open'); moveSelLot = null; }
+
+function addMoveToCart(){
+  const qty = parseFloat(document.getElementById('moveQty').value);
+  if (!qty || qty <= 0) return toast('数量を入力してください','err');
+  if (!moveSelLot || !moveSelProduct) return;
+  if (qty > moveSelLot.remainQty) return toast('在庫不足のため追加できません','err');
+  const date = document.getElementById('moveDate').value || fd(new Date());
+  moveCart.push({
+    date, code: moveSelProduct.code, name: moveSelProduct.name, unit: moveSelProduct.unit,
+    qty, unitPrice: moveSelLot.price, amount: qty * moveSelLot.price
+  });
+  closeMove();
+  updateMoveCartUI();
+  toast(`${moveSelProduct.name} ${qty}${moveSelProduct.unit} を移動リストに追加`,'ok');
+}
+
+function updateMoveCartUI(){
+  const cnt = moveCart.length;
+  document.getElementById('moveCartBar').style.display =
+    (cnt && document.getElementById('page-move').classList.contains('active')) ? 'block' : 'none';
+  document.getElementById('moveCartCount').textContent = `${cnt}件`;
+  document.getElementById('moveCartRoute').textContent = `${whName(moveFrom)} → ${whName(moveTo)}`;
+  document.getElementById('moveCartDHTitle').textContent = `移動リスト（${cnt}件）`;
+  document.getElementById('moveCartItems').innerHTML = moveCart.map((item,i) =>
+    `<div class="in-cart-item">
+      <div class="in-cart-item-info">
+        <div class="in-cart-item-name">${item.name}</div>
+        <div class="in-cart-item-detail move-cart-item-detail"><span class="mv">${item.qty}${item.unit}</span> × ¥${fmtYen(item.unitPrice)}</div>
+      </div>
+      <div class="in-cart-item-amt out-cart-item-amt">¥${fmtYen(item.amount)}</div>
+      <button class="in-cart-rm" onclick="removeMoveCart(${i})">×</button>
+    </div>`
+  ).join('');
+}
+
+function toggleMoveCart(){
+  moveCartOpen = !moveCartOpen;
+  document.getElementById('moveCartDetail').classList.toggle('open', moveCartOpen);
+}
+function removeMoveCart(i){ moveCart.splice(i,1); updateMoveCartUI(); }
+function clearMoveCart(){ moveCart = []; updateMoveCartUI(); }
+
+// 移動を実行: 各明細で「移動先に入庫 → 移動元から出庫」の順に書き込む。
+//   先に入庫（増やす）→後に出庫（減らす）。入庫成功・出庫失敗なら二重在庫で気づける。
+//   逆順だと出庫成功・入庫失敗で在庫が消える危険があるため、入庫を先にする。
+async function submitMoveCart(){
+  if (isMoveSubmitting) return;
+  if (!moveCart.length) return toast('移動リストが空です','err');
+  if (!confirm(`${whName(moveFrom)} → ${whName(moveTo)} へ ${moveCart.length}件を移動します。よろしいですか？`)) return;
+
+  isMoveSubmitting = true;
+  const btn = document.querySelector('#moveCartBar .in-cart-submit');
+  const orig = btn.textContent; btn.textContent = '移動中...'; btn.disabled = true;
+
+  const fromWh = WAREHOUSES[moveFrom].wh, toWh = WAREHOUSES[moveTo].wh;
+  const ok = [], fail = [];
+  for (const it of moveCart){
+    try {
+      // 1) 移動先へ入庫
+      const rIn = await POST_WH(toWh, { action:'addEntry', date: it.date, type:'入庫', code: it.code, qty: it.qty, unitPrice: it.unitPrice });
+      if (!rIn || rIn.success === false) throw new Error('入庫失敗: ' + (rIn?.error||''));
+      // 2) 移動元から出庫
+      const rOut = await POST_WH(fromWh, { action:'addEntry', date: it.date, type:'出庫', code: it.code, qty: it.qty, unitPrice: it.unitPrice });
+      if (!rOut || rOut.success === false){
+        fail.push(`${it.name}: 移動先へ入庫済みだが移動元の出庫に失敗（手動修正が必要）`);
+        continue;
+      }
+      ok.push(it.name);
+    } catch(e){
+      fail.push(`${it.name}: ${e.message}`);
+    }
+  }
+
+  btn.textContent = orig; btn.disabled = false; isMoveSubmitting = false;
+
+  if (!fail.length){
+    toast(`${ok.length}件を移動しました`,'ok');
+    moveCart = [];
+    updateMoveCartUI();
+    loadMoveStock();
+  } else {
+    toast(`${ok.length}件成功 / ${fail.length}件失敗`,'err');
+    alert('一部の移動に失敗しました:\n\n' + fail.join('\n') +
+      '\n\n※「入庫済みだが出庫失敗」の明細は、移動元・移動先の在庫を確認して手動で調整してください。');
+    moveCart = moveCart.filter(it => !ok.includes(it.name));
+    updateMoveCartUI();
+  }
+}
+
 function toast(msg,type='ok') {
   const t=document.getElementById('toast');
   t.textContent=msg; t.className=`toast ${type} show`;
