@@ -1237,6 +1237,10 @@ input::placeholder{color:var(--text3)}
         <label>移動日</label>
         <input type="date" id="moveDate" />
       </div>
+      <div class="fg" style="margin-top:8px">
+        <label>メモ（移動先に記録・任意）</label>
+        <input type="text" id="moveMemo" placeholder="例: 12匹 など" maxlength="100" />
+      </div>
       <div class="warn-box" id="moveWarnBox">在庫不足！マイナスになります</div>
       <button class="btn-full btn-out" onclick="addMoveToCart()">移動リストに追加</button>
       <button class="btn-full btn-cancel mt8" onclick="closeMove()">キャンセル</button>
@@ -1393,12 +1397,28 @@ async function switchWh(wh) {
   updateMoveRoute();
   updateMoveCartUI();
 
+  // ★ 古い倉庫のデータを即クリア（切替時に前の倉庫の在庫が残って見えるのを防ぐ）
+  stock = [];
+  products = [];
+  summaryData = null;
+  lotLoaded = {};
+  lots = {};
+  outCart = [];
+  inCart = [];
+  // 各リストをローディング表示にリセット
+  const stockEl = document.getElementById('stockList');
+  const prodEl  = document.getElementById('productList');
+  const histEl  = document.getElementById('histList');
+  if (stockEl) stockEl.innerHTML = '<div class="loading"><div class="spin"></div>読み込み中...</div>';
+  if (prodEl)  prodEl.innerHTML  = '<div class="loading"><div class="spin"></div>読み込み中...</div>';
+  if (histEl)  histEl.innerHTML  = '<div class="loading"><div class="spin"></div></div>';
+  if (typeof updateInCartUI === 'function') updateInCartUI();
+  if (typeof updateOutCartUI === 'function') updateOutCartUI();
+
   if (isAllMode) {
-    summaryData = null;          // 集計キャッシュをリセット
     goTab('out');                // 全社の初期タブ = 在庫（出庫ページを在庫表示に流用）
     await loadStockAll();
   } else {
-    summaryData = null;          // 倉庫が変わったら集計キャッシュ破棄
     goTab('out');
     await Promise.all([loadProducts(), loadStock()]);
     renderActiveTab();
@@ -2542,6 +2562,7 @@ function goTab(name) {
 let moveFrom = 'A', moveTo = 'B';
 let moveStock = [];            // 移動元の在庫
 let moveSelProduct = null, moveSelLot = null;
+let moveMemoByPrice = {};
 let moveCart = [];
 let moveCartOpen = false;
 let isMoveSubmitting = false;
@@ -2615,6 +2636,16 @@ async function openMove(code){
   document.getElementById('moveQty').value = '';
   document.getElementById('moveWarnBox').classList.remove('show');
   moveSelLot = null;
+  moveMemoByPrice = {};   // 単価 → 直近メモ（移動時の初期値に使う）
+  // 移動元の入庫メモを取得して単価ごとに保持
+  try {
+    const em = await GET_WH(WAREHOUSES[moveFrom].wh, 'getInEntries', { code });
+    (em.entries || []).forEach(e => {
+      if (e.memo && e.memo.trim() !== '' && !moveMemoByPrice[e.unitPrice]) {
+        moveMemoByPrice[e.unitPrice] = e.memo;   // 新しい順で来るので最初=最新
+      }
+    });
+  } catch(e) { /* メモ取得失敗は無視 */ }
   try {
     const d = await GET_WH(WAREHOUSES[moveFrom].wh, 'getLots', { code });
     const lotArr = d.lots || [];
@@ -2644,6 +2675,9 @@ function selMoveLot(idx, price, remainQty){
   moveSelLot = { price, remainQty };
   document.getElementById('moveSelLotPrice').textContent = `¥${price.toLocaleString()} /単価`;
   document.getElementById('moveForm').style.display = 'block';
+  // メモ初期値: この単価の直近メモを提案（編集可）
+  const mm = document.getElementById('moveMemo');
+  if (mm) mm.value = moveMemoByPrice[price] || '';
   document.getElementById('moveQty').focus();
   document.querySelectorAll('#moveLotList .lot-card').forEach((c,i)=>c.classList.toggle('selected', i===idx));
   setTimeout(()=>document.getElementById('moveForm').scrollIntoView({behavior:'smooth',block:'nearest'}),100);
@@ -2665,9 +2699,10 @@ function addMoveToCart(){
   if (!moveSelLot || !moveSelProduct) return;
   if (qty > moveSelLot.remainQty) return toast('在庫不足のため追加できません','err');
   const date = document.getElementById('moveDate').value || fd(new Date());
+  const memo = (document.getElementById('moveMemo')?.value || '').trim();
   moveCart.push({
     date, code: moveSelProduct.code, name: moveSelProduct.name, unit: moveSelProduct.unit,
-    qty, unitPrice: moveSelLot.price, amount: qty * moveSelLot.price
+    qty, unitPrice: moveSelLot.price, amount: qty * moveSelLot.price, memo
   });
   closeMove();
   updateMoveCartUI();
@@ -2686,6 +2721,7 @@ function updateMoveCartUI(){
       <div class="in-cart-item-info">
         <div class="in-cart-item-name">${item.name}</div>
         <div class="in-cart-item-detail move-cart-item-detail"><span class="mv">${item.qty}${item.unit}</span> × ¥${fmtYen(item.unitPrice)}</div>
+        ${item.memo ? `<div class="in-cart-item-memo">📝 ${escapeHtml(item.memo)}</div>` : ''}
       </div>
       <div class="in-cart-item-amt out-cart-item-amt">¥${fmtYen(item.amount)}</div>
       <button class="in-cart-rm" onclick="removeMoveCart(${i})">×</button>
@@ -2716,10 +2752,10 @@ async function submitMoveCart(){
   const ok = [], fail = [];
   for (const it of moveCart){
     try {
-      // 1) 移動先へ入庫
-      const rIn = await POST_WH(toWh, { action:'addEntry', date: it.date, type:'入庫', code: it.code, qty: it.qty, unitPrice: it.unitPrice });
+      // 1) 移動先へ入庫（メモは移動先の入庫に記録）
+      const rIn = await POST_WH(toWh, { action:'addEntry', date: it.date, type:'入庫', code: it.code, qty: it.qty, unitPrice: it.unitPrice, memo: it.memo || '' });
       if (!rIn || rIn.success === false) throw new Error('入庫失敗: ' + (rIn?.error||''));
-      // 2) 移動元から出庫
+      // 2) 移動元から出庫（メモなし）
       const rOut = await POST_WH(fromWh, { action:'addEntry', date: it.date, type:'出庫', code: it.code, qty: it.qty, unitPrice: it.unitPrice });
       if (!rOut || rOut.success === false){
         fail.push(`${it.name}: 移動先へ入庫済みだが移動元の出庫に失敗（手動修正が必要）`);
