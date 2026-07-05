@@ -225,6 +225,31 @@ input::placeholder{color:var(--text3)}
 .case-out-info{flex:1}
 .case-out-memo{font-size:15px;font-weight:700;color:var(--navy)}
 .case-out-sub{font-size:12px;color:var(--text2);margin-top:2px}
+/* ケースを単価ごとにグループ化（タップで展開） */
+.case-grp{border:1.5px solid var(--border2);border-radius:10px;background:var(--surface);overflow:hidden;margin-bottom:8px}
+.case-grp.has-sel{border-color:var(--green)}
+.case-grp-head{
+  display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;
+  user-select:none;
+}
+.case-grp-head:active{background:var(--surface3,var(--bg))}
+.case-grp-price{font-size:16px;font-weight:800;color:var(--navy)}
+.case-grp-meta{font-size:12px;color:var(--text2);margin-top:2px}
+.case-grp-info{flex:1;min-width:0}
+.case-grp-count{
+  font-size:12px;font-weight:700;color:var(--text2);
+  background:var(--surface3,var(--bg));border:1px solid var(--border);
+  padding:3px 9px;border-radius:20px;flex-shrink:0;
+}
+.case-grp-count.sel{background:var(--green);color:#fff;border-color:var(--green)}
+.case-grp-arrow{font-size:12px;color:var(--text3);flex-shrink:0;transition:transform .2s}
+.case-grp.open .case-grp-arrow{transform:rotate(90deg)}
+.case-grp-body{display:none;flex-direction:column;gap:7px;padding:0 12px 12px}
+.case-grp.open .case-grp-body{display:flex}
+.case-grp-selall{
+  font-size:12px;font-weight:700;color:var(--accent-d);cursor:pointer;
+  padding:6px 2px 8px;user-select:none;
+}
 
 /* ── TABS ── */
 .tabs{
@@ -685,6 +710,89 @@ input::placeholder{color:var(--text3)}
 .more-btn:active{background:var(--surface3)}
 .shown-info{font-size:11px;color:var(--text3);margin-top:10px;text-align:center}
 #allHistBtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+/* 取消（ハンドラ）UI */
+.hist-card.canceled{opacity:.55}
+.hist-card.canceled .hist-name{text-decoration:line-through;text-decoration-thickness:1px}
+.hist-card.is-reversal{background:var(--surface2,var(--surface));border-style:dashed}
+.hist-badge.cancel{background:var(--red-l);color:var(--red)}
+.hist-badge.reversal{background:#e5e7eb;color:#6b7280}
+.hist-tag-canceled{
+  display:inline-block;margin-left:6px;padding:1px 7px;border-radius:var(--r-xs);
+  font-size:10px;font-weight:700;background:var(--red-l);color:var(--red);vertical-align:middle;
+}
+.hist-tag-partial{
+  display:inline-block;margin-left:6px;padding:1px 7px;border-radius:var(--r-xs);
+  font-size:10px;font-weight:700;background:var(--orange-l,#fef3c7);color:var(--orange,#b45309);vertical-align:middle;
+}
+.hist-undo-btn{
+  flex-shrink:0;background:var(--surface);border:1px solid var(--border2);
+  color:var(--red);width:34px;height:34px;border-radius:var(--r-sm);
+  font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-sm);padding:0;line-height:1;
+}
+.hist-undo-btn:active{background:var(--red-l)}
+.hist-adj-btn{
+  flex-shrink:0;background:var(--surface);border:1px solid var(--border2);
+  color:var(--navy);width:34px;height:34px;border-radius:var(--r-sm);
+  font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-sm);padding:0;line-height:1;margin-right:6px;
+}
+.hist-adj-btn:active{background:var(--surface3,var(--bg))}
+.undo-confirm-btn.adj{background:var(--navy)}
+.adj-diff{
+  margin-top:12px;padding:10px 14px;border-radius:var(--r);font-size:13px;font-weight:600;
+  background:var(--surface3,var(--bg));border:1px solid var(--border);
+}
+.adj-diff.plus{color:var(--green)}
+.adj-diff.minus{color:var(--red)}
+.adj-diff.zero{color:var(--text2)}
+/* 取消モーダル */
+.undo-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;
+  display:none;align-items:flex-end;justify-content:center;
+}
+.undo-overlay.open{display:flex}
+.undo-sheet{
+  background:var(--surface);width:100%;max-width:520px;
+  border-radius:var(--r-lg,18px) var(--r-lg,18px) 0 0;padding:20px 18px 24px;
+  box-shadow:0 -6px 30px rgba(0,0,0,.2);
+}
+.undo-title{font-family:var(--font);font-weight:700;font-size:17px;margin-bottom:4px}
+.undo-sub{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5}
+.undo-target{
+  background:var(--surface3,var(--bg));border:1px solid var(--border);
+  border-radius:var(--r);padding:12px 14px;margin-bottom:16px;font-size:13px;
+}
+.undo-target b{font-weight:700}
+.undo-mode-row{display:flex;gap:8px;margin-bottom:14px}
+.undo-mode-btn{
+  flex:1;padding:12px;border-radius:var(--r);border:1.5px solid var(--border2);
+  background:var(--surface);color:var(--text);font-family:var(--font);
+  font-size:13px;font-weight:700;cursor:pointer;
+}
+.undo-mode-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.undo-qty-wrap{margin-bottom:16px}
+.undo-qty-wrap.hidden{display:none}
+.undo-qty-wrap label{font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:6px}
+.undo-qty-wrap input{
+  width:100%;background:var(--surface);border:1px solid var(--border);
+  color:var(--text);padding:12px 14px;border-radius:var(--r);
+  font-size:16px;font-family:var(--font);outline:none;box-sizing:border-box;
+}
+.undo-qty-wrap input:focus{border-color:var(--accent)}
+.undo-actions{display:flex;gap:10px}
+.undo-cancel-btn{
+  flex:1;padding:14px;border-radius:var(--r);border:1px solid var(--border2);
+  background:var(--surface);color:var(--text2);font-family:var(--font);
+  font-size:14px;font-weight:700;cursor:pointer;
+}
+.undo-confirm-btn{
+  flex:2;padding:14px;border-radius:var(--r);border:none;
+  background:var(--red);color:#fff;font-family:var(--font);
+  font-size:14px;font-weight:700;cursor:pointer;
+}
+.undo-confirm-btn:disabled{opacity:.5;cursor:not-allowed}
+
 .hist-empty{
   text-align:center;padding:60px 20px;color:var(--text2);
 }
@@ -1274,6 +1382,45 @@ input::placeholder{color:var(--text3)}
   </div>
 </div>
 
+<!-- 取消（ハンドラ）モーダル -->
+<div class="undo-overlay" id="undoOverlay" onclick="if(event.target===this)closeUndo()">
+  <div class="undo-sheet">
+    <div class="undo-title">この記録を取消しますか？</div>
+    <div class="undo-sub" id="undoSub">反対仕訳を作成して在庫を戻します。元の記録は履歴に残ります。</div>
+    <div class="undo-target" id="undoTarget"></div>
+    <div class="undo-mode-row">
+      <button class="undo-mode-btn active" id="undoModeFull" onclick="setUndoMode('full')">全部を取消</button>
+      <button class="undo-mode-btn" id="undoModePartial" onclick="setUndoMode('partial')">数量を指定</button>
+    </div>
+    <div class="undo-qty-wrap hidden" id="undoQtyWrap">
+      <label id="undoQtyLabel">取消する数量</label>
+      <input type="number" id="undoQtyInput" inputmode="decimal" min="0" step="any" placeholder="0">
+    </div>
+    <div class="undo-actions">
+      <button class="undo-cancel-btn" onclick="closeUndo()">やめる</button>
+      <button class="undo-confirm-btn" id="undoConfirmBtn" onclick="doUndo()">取消を実行</button>
+    </div>
+  </div>
+</div>
+
+<!-- 修正（数量を正しい値に）モーダル -->
+<div class="undo-overlay" id="adjOverlay" onclick="if(event.target===this)closeAdjust()">
+  <div class="undo-sheet">
+    <div class="undo-title">数量を修正</div>
+    <div class="undo-sub">正しい数量に直します。差分だけ自動で入出庫を調整し、元の記録は履歴に残ります。</div>
+    <div class="undo-target" id="adjTarget"></div>
+    <div class="undo-qty-wrap">
+      <label id="adjQtyLabel">正しい数量</label>
+      <input type="number" id="adjQtyInput" inputmode="decimal" min="0" step="any" placeholder="0" oninput="onAdjInput()">
+    </div>
+    <div class="adj-diff zero" id="adjDiff">数量を入力してください</div>
+    <div class="undo-actions" style="margin-top:16px">
+      <button class="undo-cancel-btn" onclick="closeAdjust()">やめる</button>
+      <button class="undo-confirm-btn adj" id="adjConfirmBtn" onclick="doAdjust()" disabled>修正を実行</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1577,9 +1724,11 @@ function filterOut() {
 // ============================================================
 let caseOutSel = {};   // lotId → true（選択中）
 let caseOutList = [];   // 現在表示中の残ケース
+let _caseGrpOpen = {};  // 単価 → 展開状態（true=開いている）
 
 async function loadCaseOut(code) {
   caseOutSel = {};
+  _caseGrpOpen = {};
   const box = document.getElementById('lotList');
   box.innerHTML = '<div class="loading"><div class="spin"></div>ケース読込中...</div>';
   try {
@@ -1599,22 +1748,58 @@ function renderCaseOut() {
   const box = document.getElementById('lotList');
   const unit = selProduct.unit;
   const selCount = Object.keys(caseOutSel).filter(k => caseOutSel[k]).length;
+
+  // 単価ごとにグループ化（同じ単価のケースを1つにまとめ、タップで展開）
+  const groups = {};
+  caseOutList.forEach(c => {
+    const p = Number(c.unitPrice);
+    if (!groups[p]) groups[p] = [];
+    groups[p].push(c);
+  });
+  // 単価の安い順（必要なら降順に変えられる）
+  const prices = Object.keys(groups).map(Number).sort((a,b) => a - b);
+
+  const groupsHtml = prices.map(p => {
+    const list = groups[p];
+    const selInGrp = list.filter(c => caseOutSel[c.lotId]).length;
+    const isOpen = _caseGrpOpen[p];
+    const allSel = selInGrp === list.length;
+
+    const itemsHtml = list.map(c => `
+      <div class="case-out-item ${caseOutSel[c.lotId] ? 'sel' : ''}" onclick="toggleCaseOut('${c.lotId}')">
+        <div class="case-out-check">${caseOutSel[c.lotId] ? '✓' : ''}</div>
+        <div class="case-out-info">
+          <div class="case-out-memo" id="met_${c.rowNum}">${c.memo ? escapeHtml(c.memo) : '<span class="memo-empty-hint">（メモなし）</span>'}</div>
+          <div class="case-out-sub">${c.dateLabel || c.date}</div>
+        </div>
+        <button class="memo-edit-btn case-edit" onclick="event.stopPropagation();startEditMemo(${c.rowNum},${selProduct.code},'cases')" title="メモ編集">✏️</button>
+      </div>`).join('');
+
+    return `
+      <div class="case-grp ${isOpen ? 'open' : ''} ${selInGrp ? 'has-sel' : ''}">
+        <div class="case-grp-head" onclick="toggleCaseGrp(${p})">
+          <div class="case-grp-info">
+            <div class="case-grp-price">¥${p.toLocaleString()} <span style="font-size:12px;font-weight:600;color:var(--text2)">/単価</span></div>
+            <div class="case-grp-meta">${list.length}ケース${selInGrp ? ` · <b style="color:var(--green)">${selInGrp}件選択</b>` : ''}</div>
+          </div>
+          <span class="case-grp-count ${selInGrp ? 'sel' : ''}">${selInGrp ? selInGrp + '/' + list.length : list.length + '件'}</span>
+          <span class="case-grp-arrow">▶</span>
+        </div>
+        <div class="case-grp-body">
+          <div class="case-grp-selall" onclick="selectAllCaseGrp(${p}, ${!allSel})">
+            ${allSel ? '☑ すべて解除' : '☐ この単価をすべて選択'}
+          </div>
+          ${itemsHtml}
+        </div>
+      </div>`;
+  }).join('');
+
   box.innerHTML = `
     <div class="case-out-head">
-      <span>残ケース ${caseOutList.length}件</span>
-      <span class="case-out-selcount">${selCount ? selCount + '件 選択中' : 'タップで選択'}</span>
+      <span>残ケース ${caseOutList.length}件（${prices.length}単価）</span>
+      <span class="case-out-selcount">${selCount ? selCount + '件 選択中' : 'タップで展開'}</span>
     </div>
-    <div class="case-out-list">
-      ${caseOutList.map(c => `
-        <div class="case-out-item ${caseOutSel[c.lotId] ? 'sel' : ''}" onclick="toggleCaseOut('${c.lotId}')">
-          <div class="case-out-check">${caseOutSel[c.lotId] ? '✓' : ''}</div>
-          <div class="case-out-info">
-            <div class="case-out-memo" id="met_${c.rowNum}">${c.memo ? escapeHtml(c.memo) : '<span class="memo-empty-hint">（メモなし）</span>'}</div>
-            <div class="case-out-sub">${c.dateLabel || c.date} · ¥${Number(c.unitPrice).toLocaleString()}</div>
-          </div>
-          <button class="memo-edit-btn case-edit" onclick="event.stopPropagation();startEditMemo(${c.rowNum},${selProduct.code},'cases')" title="メモ編集">✏️</button>
-        </div>`).join('')}
-    </div>
+    ${groupsHtml}
     <div class="out-date-row" style="margin-top:12px">
       <label>出庫日</label>
       <input type="date" id="caseOutDate" value="${fd(new Date())}" />
@@ -1624,8 +1809,26 @@ function renderCaseOut() {
     </button>`;
 }
 
+// 単価グループの展開状態は上部で宣言済み（_caseGrpOpen）
+
+function toggleCaseGrp(price) {
+  _caseGrpOpen[price] = !_caseGrpOpen[price];
+  renderCaseOut();
+}
+
+function selectAllCaseGrp(price, select) {
+  caseOutList.forEach(c => {
+    if (Number(c.unitPrice) === Number(price)) caseOutSel[c.lotId] = !!select;
+  });
+  _caseGrpOpen[price] = true;   // 選択操作したグループは開いたままに
+  renderCaseOut();
+}
+
 function toggleCaseOut(lotId) {
   caseOutSel[lotId] = !caseOutSel[lotId];
+  // このケースが属する単価グループは開いたままに
+  const c = caseOutList.find(x => x.lotId === lotId);
+  if (c) _caseGrpOpen[Number(c.unitPrice)] = true;
   renderCaseOut();
 }
 
@@ -2235,14 +2438,43 @@ function renderHist() {
     const isIn = (r.type === '入庫' || r.type === '移動入');
     const isMove = (r.type === '移動入' || r.type === '移動出');
     const aQ = Math.abs(r.qty), aA = Math.abs(r.amount);
-    const badgeClass = isMove ? 'move' : (isIn ? 'in' : 'out');
-    html += `<div class="hist-card">
-      <div class="hist-badge ${badgeClass}">${r.type}</div>
+    const isReversal = (r.reversalOf && r.reversalOf > 0);        // 反対仕訳（取消 or 修正の減）
+    const isAddRow   = (r.adjustAddOf && r.adjustAddOf > 0);       // 修正で増やした追加行
+    const isAdjust   = !!r.isAdjustRow;                            // 修正由来（減・増どちらも）
+    const fullyCanceled = !!r.canceled;                           // 元行が全額取消済み
+    const partialQty = Number(r.canceledQty || 0);
+    const isPartial = !fullyCanceled && partialQty > 0;           // 一部だけ取消/修正済み
+    const isCase = !!r.lotId;                                     // ケース管理行
+
+    let badgeClass, badgeText;
+    if (isReversal && isAdjust)      { badgeClass = 'reversal'; badgeText = '修正'; }
+    else if (isReversal)             { badgeClass = 'reversal'; badgeText = '取消'; }
+    else if (isAddRow)               { badgeClass = isMove ? 'move' : (isIn ? 'in' : 'out'); badgeText = r.type + '（修正）'; }
+    else                             { badgeClass = isMove ? 'move' : (isIn ? 'in' : 'out'); badgeText = r.type; }
+
+    // 状態タグ（元行に付く）
+    let stateTag = '';
+    if (!isReversal && !isAddRow && fullyCanceled) stateTag = '<span class="hist-tag-canceled">取消済</span>';
+    else if (!isReversal && !isAddRow && isPartial) stateTag = `<span class="hist-tag-partial">修正済 残${fn(aQ-partialQty)}${r.unit}</span>`;
+
+    // 元の（取消でも追加でもない）通常行にだけ操作ボタンを出す
+    const isEditable = !isReversal && !isAddRow && !fullyCanceled;
+    const canUndo   = isEditable;
+    const canAdjust = isEditable && !isCase;   // ケースは数量修正不可（取消のみ）
+    const cardCls = 'hist-card' + (fullyCanceled ? ' canceled' : '') + ((isReversal||isAddRow) ? ' is-reversal' : '');
+    const amtColor = (isReversal) ? 'var(--text3,#9ca3af)'
+                    : (isMove ? 'var(--accent-d)' : (isIn ? 'var(--green)' : 'var(--red)'));
+
+    const ctx = JSON.stringify({rowNum:r.rowNum,code:r.code,name:r.name,unit:r.unit,type:r.type,qty:aQ,unitPrice:r.unitPrice,canceledQty:partialQty,date:r.date,lotId:r.lotId,isCase:isCase});
+    html += `<div class="${cardCls}">
+      <div class="hist-badge ${badgeClass}">${badgeText}</div>
       <div class="hist-info">
-        <div class="hist-name">${r.name}</div>
+        <div class="hist-name">${r.name}${stateTag}</div>
         <div class="hist-meta">${aQ}${r.unit} × ¥${Number(r.unitPrice).toLocaleString()}</div>
       </div>
-      <div class="hist-amt" style="color:${isMove?'var(--accent-d)':(isIn?'var(--green)':'var(--red)')}">${isIn?'+':'-'}¥${aA.toLocaleString()}</div>
+      <div class="hist-amt" style="color:${amtColor}">${isIn?'+':'-'}¥${aA.toLocaleString()}</div>
+      ${canAdjust ? `<button class="hist-adj-btn" title="数量を修正" onclick='openAdjust(${ctx})'>✎</button>` : ''}
+      ${canUndo ? `<button class="hist-undo-btn" title="取消" onclick='openUndo(${ctx})'>↩</button>` : ''}
     </div>`;
   });
 
@@ -2257,6 +2489,238 @@ function moreHist() { renderHist(); }
 function onHistDate() { _histMode = 'date'; document.getElementById('allHistBtn').classList.remove('active'); loadHist(); }
 function showAllHist() { _histMode = 'all'; document.getElementById('allHistBtn').classList.add('active'); document.getElementById('histDate').value = ''; loadHist(); }
 function todayHist() { _histMode = 'date'; document.getElementById('allHistBtn').classList.remove('active'); document.getElementById('histDate').value = fd(new Date()); loadHist(); }
+
+// ============================================================
+// 取消（ハンドラ）— 履歴の1件を反対仕訳で取り消す
+//   ・全部取消 / 数量を指定して一部取消
+//   ・倉庫移動(移動入/移動出)は「両倉庫それぞれ」を自動で取り消す
+// ============================================================
+let _undoTarget = null;    // { rowNum, code, name, unit, type, qty, unitPrice, canceledQty, date, lotId }
+let _undoMode = 'full';
+let _isUndoing = false;
+
+function openUndo(t) {
+  if (isAllMode) { toast('全社モードでは取消できません。倉庫を選んでください','err'); return; }
+  _undoTarget = t;
+  _undoMode = 'full';
+  const remain = fn(t.qty - (t.canceledQty || 0));
+  const isMove = (t.type === '移動入' || t.type === '移動出');
+
+  document.getElementById('undoTarget').innerHTML =
+    `<b>${escapeHtml(t.name)}</b>（${t.type}）<br>` +
+    `数量 ${remain}${t.unit} × ¥${Number(t.unitPrice).toLocaleString()}` +
+    (t.canceledQty ? `　<span style="color:var(--orange,#b45309)">（うち${t.canceledQty}${t.unit}は取消済み）</span>` : '');
+
+  document.getElementById('undoSub').textContent = isMove
+    ? '倉庫移動のため、移動元・移動先の両方を戻します。元の記録は履歴に残ります。'
+    : '反対仕訳を作成して在庫を戻します。元の記録は履歴に残ります。';
+
+  // ケース管理商品は「数量を指定」不可（1ケース=1単位）。全部取消のみ。
+  const partialBtn = document.getElementById('undoModePartial');
+  partialBtn.style.display = t.isCase ? 'none' : '';
+
+  document.getElementById('undoModeFull').classList.add('active');
+  document.getElementById('undoModePartial').classList.remove('active');
+  document.getElementById('undoQtyWrap').classList.add('hidden');
+  const inp = document.getElementById('undoQtyInput');
+  inp.value = ''; inp.max = remain;
+  document.getElementById('undoQtyLabel').textContent = `取消する数量（残り ${remain}${t.unit}）`;
+  document.getElementById('undoConfirmBtn').disabled = false;
+  document.getElementById('undoConfirmBtn').textContent = '取消を実行';
+  document.getElementById('undoOverlay').classList.add('open');
+}
+
+function closeUndo() {
+  document.getElementById('undoOverlay').classList.remove('open');
+  _undoTarget = null;
+}
+
+function setUndoMode(mode) {
+  _undoMode = mode;
+  document.getElementById('undoModeFull').classList.toggle('active', mode === 'full');
+  document.getElementById('undoModePartial').classList.toggle('active', mode === 'partial');
+  document.getElementById('undoQtyWrap').classList.toggle('hidden', mode !== 'partial');
+  if (mode === 'partial') setTimeout(() => document.getElementById('undoQtyInput').focus(), 50);
+}
+
+async function doUndo() {
+  if (_isUndoing || !_undoTarget) return;
+  const t = _undoTarget;
+  const remain = fn(t.qty - (t.canceledQty || 0));
+
+  // 取消数量の決定
+  let qty = null;   // null = 全部
+  if (_undoMode === 'partial') {
+    qty = Number(document.getElementById('undoQtyInput').value);
+    if (!(qty > 0))          return toast('取消する数量を入力してください','err');
+    if (qty - remain > 0.0001) return toast(`残数(${remain}${t.unit})を超えています`,'err');
+  }
+  const qtyLabel = (qty === null ? remain : qty) + t.unit;
+
+  const isMove = (t.type === '移動入' || t.type === '移動出');
+  if (!confirm(`${t.name} の${isMove?'移動':t.type} ${qtyLabel} を取消します。よろしいですか？`)) return;
+
+  _isUndoing = true;
+  const btn = document.getElementById('undoConfirmBtn');
+  btn.disabled = true; btn.textContent = '取消中...';
+
+  try {
+    if (isMove) {
+      // 倉庫移動: 現在の倉庫(この行がある方)と、もう一方の倉庫の対応行を両方戻す。
+      await undoMovePair(t, qty);
+    } else {
+      // 通常の入庫/出庫: この倉庫の1行を反対仕訳
+      const r = await POST({ action:'reverseEntry', rowNum: t.rowNum, code: t.code, qty: qty === null ? '' : qty });
+      if (!r || r.success === false) throw new Error(r?.error || '取消失敗');
+    }
+    closeUndo();
+    toast('取消しました','ok');
+    summaryData = null;              // 集計キャッシュ無効化
+    await loadStock();               // 在庫を最新に
+    await loadHist();                // 履歴を再描画（取消行・状態を反映）
+  } catch(e) {
+    toast('取消失敗: ' + (e.message || ''),'err');
+  } finally {
+    _isUndoing = false;
+    btn.disabled = false; btn.textContent = '取消を実行';
+  }
+}
+
+// 倉庫移動の取消: この行(移動入 or 移動出)がある倉庫と相手倉庫の両方を戻す。
+//   移動は「移動先=移動入」「移動元=移動出」を同数量・同単価で作っている。
+//   現在の倉庫(currentWh)にこの行がある。相手倉庫の対応行を、
+//   同コード・同単価・反対種別・未取消の中から数量が合うものを探して戻す。
+async function undoMovePair(t, qty) {
+  const thisWh  = curWhParam();                                   // この行がある倉庫
+  const otherKey = (currentWh === 'A') ? 'B' : 'A';
+  const otherWh  = WAREHOUSES[otherKey].wh;
+  const cancelQty = (qty === null ? fn(t.qty - (t.canceledQty || 0)) : qty);
+
+  // 1) この倉庫側の行を反対仕訳
+  const r1 = await POST_WH(thisWh, { action:'reverseEntry', rowNum: t.rowNum, code: t.code, qty: qty === null ? '' : qty });
+  if (!r1 || r1.success === false) throw new Error('（この倉庫側）' + (r1?.error || '取消失敗'));
+
+  // 2) 相手倉庫の対応行を探す（反対種別・同コード・同単価・取消可能な残数あり）
+  const wantType = (t.type === '移動入') ? '移動出' : '移動入';
+  let hist;
+  try {
+    const d = await GET_WH(otherWh, 'getHistory', {});
+    hist = (d && d.history) || [];
+  } catch(e) { hist = []; }
+
+  // 候補: 反対種別・同コード・同単価・反対仕訳でない・残数>=cancelQty
+  const cand = hist.filter(h =>
+    h.type === wantType && Number(h.code) === Number(t.code) &&
+    Math.abs(Number(h.unitPrice) - Number(t.unitPrice)) < 0.0001 &&
+    !(h.reversalOf > 0) && !h.canceled &&
+    (Math.abs(Number(h.qty)) - (h.canceledQty || 0)) - cancelQty > -0.0001
+  );
+  // 日付が近いものを優先（同日→行番号が近い順）。ざっくり行番号昇順で最初の候補。
+  cand.sort((a,b) => a.rowNum - b.rowNum);
+
+  if (!cand.length) {
+    // 相手倉庫の対応行が見つからない → この倉庫側だけ戻した状態。手動確認を促す。
+    throw new Error(`相手倉庫（${WAREHOUSES[otherKey].name}）の対応する移動記録が見つかりませんでした。この倉庫側のみ取消済みです。相手倉庫の在庫を手動で確認してください。`);
+  }
+
+  const target = cand[0];
+  const r2 = await POST_WH(otherWh, { action:'reverseEntry', rowNum: target.rowNum, code: target.code, qty: cancelQty });
+  if (!r2 || r2.success === false) {
+    throw new Error(`相手倉庫（${WAREHOUSES[otherKey].name}）の取消に失敗: ${r2?.error || ''}。この倉庫側は取消済みです。手動確認してください。`);
+  }
+  return true;
+}
+
+// ============================================================
+// 修正（数量を正しい値に）— 履歴の1件の実効数量を直す
+//   ・倉庫移動は数量修正の対象外（片側だけ直すと在庫が不整合になるため、
+//     移動は「取消してやり直し」を推奨）→ そもそもボタンを出さない実装だが念のため弾く
+//   ・ケース管理も対象外（取消のみ）
+// ============================================================
+let _adjTarget = null;
+let _isAdjusting = false;
+
+function openAdjust(t) {
+  if (isAllMode) { toast('全社モードでは修正できません。倉庫を選んでください','err'); return; }
+  const isMove = (t.type === '移動入' || t.type === '移動出');
+  if (isMove) { toast('倉庫移動は数量修正できません。取消してやり直してください','err'); return; }
+  if (t.isCase) { toast('ケース管理商品は数量修正できません。取消してください','err'); return; }
+
+  _adjTarget = t;
+  const remain = fn(t.qty - (t.canceledQty || 0));   // 現在の実効数量
+  document.getElementById('adjTarget').innerHTML =
+    `<b>${escapeHtml(t.name)}</b>（${t.type}）<br>` +
+    `現在の数量 <b>${remain}${t.unit}</b> × ¥${Number(t.unitPrice).toLocaleString()}`;
+  document.getElementById('adjQtyLabel').textContent = `正しい数量（現在 ${remain}${t.unit}）`;
+  const inp = document.getElementById('adjQtyInput');
+  inp.value = ''; inp.placeholder = String(remain);
+  const diffEl = document.getElementById('adjDiff');
+  diffEl.className = 'adj-diff zero'; diffEl.textContent = '正しい数量を入力してください';
+  document.getElementById('adjConfirmBtn').disabled = true;
+  document.getElementById('adjOverlay').classList.add('open');
+}
+
+function onAdjInput() {
+  const t = _adjTarget; if (!t) return;
+  const remain = fn(t.qty - (t.canceledQty || 0));
+  const v = document.getElementById('adjQtyInput').value;
+  const diffEl = document.getElementById('adjDiff');
+  const btn = document.getElementById('adjConfirmBtn');
+  if (v === '' || isNaN(Number(v)) || Number(v) < 0) {
+    diffEl.className = 'adj-diff zero'; diffEl.textContent = '正しい数量を入力してください';
+    btn.disabled = true; return;
+  }
+  const newQty = fn(Number(v));
+  const diff = fn(newQty - remain);
+  const isIn = (t.type === '入庫' || t.type === '移動入');
+  if (Math.abs(diff) < 0.0001) {
+    diffEl.className = 'adj-diff zero'; diffEl.textContent = '数量は変わりません';
+    btn.disabled = true;
+  } else if (diff < 0) {
+    // 実効数量を減らす → 在庫は「入庫なら減る／出庫なら戻って増える」
+    diffEl.className = 'adj-diff minus';
+    diffEl.textContent = `${remain}${t.unit} → ${newQty}${t.unit}（${Math.abs(diff)}${t.unit} 減らす）`;
+    btn.disabled = false;
+  } else {
+    diffEl.className = 'adj-diff plus';
+    diffEl.textContent = `${remain}${t.unit} → ${newQty}${t.unit}（${diff}${t.unit} 増やす）`;
+    btn.disabled = false;
+  }
+}
+
+function closeAdjust() {
+  document.getElementById('adjOverlay').classList.remove('open');
+  _adjTarget = null;
+}
+
+async function doAdjust() {
+  if (_isAdjusting || !_adjTarget) return;
+  const t = _adjTarget;
+  const remain = fn(t.qty - (t.canceledQty || 0));
+  const newQty = fn(Number(document.getElementById('adjQtyInput').value));
+  if (!(newQty >= 0)) return toast('正しい数量を入力してください','err');
+  if (Math.abs(newQty - remain) < 0.0001) return toast('数量は変わりません','err');
+
+  if (!confirm(`${t.name} の${t.type}を ${remain}${t.unit} → ${newQty}${t.unit} に修正します。よろしいですか？`)) return;
+
+  _isAdjusting = true;
+  const btn = document.getElementById('adjConfirmBtn');
+  btn.disabled = true; btn.textContent = '修正中...';
+  try {
+    const r = await POST({ action:'adjustEntry', rowNum: t.rowNum, code: t.code, newQty: newQty });
+    if (!r || r.success === false) throw new Error(r?.error || '修正失敗');
+    closeAdjust();
+    toast('数量を修正しました','ok');
+    summaryData = null;
+    await loadStock();
+    await loadHist();
+  } catch(e) {
+    toast('修正失敗: ' + (e.message || ''),'err');
+  } finally {
+    _isAdjusting = false;
+    btn.disabled = false; btn.textContent = '修正を実行';
+  }
+}
 
 // ============================================================
 // 設定
@@ -2381,8 +2845,12 @@ async function submitInCart() {
     summaryData = null; // 集計キャッシュを無効化（次回開いた時に再取得）
     toast(`${cnt}件の入庫を登録しました`,'ok');
     await loadStock();
-    renderActiveTab();
-    goTab('out');
+    // 入庫タブに留まる（出庫へ飛ばさない）。商品リストだけ最新在庫で再描画。
+    inDirty = true;
+    if (document.getElementById('page-in').classList.contains('active')) {
+      renderProducts(productsWithStock());
+      inDirty = false;
+    }
   } catch(e) {
     toast('送信失敗','err');
   } finally {
@@ -2567,6 +3035,9 @@ let moveFrom = 'A', moveTo = 'B';
 let moveStock = [];            // 移動元の在庫
 let moveSelProduct = null, moveSelLot = null;
 let moveMemoByPrice = {};
+let moveCaseSel = {};
+let moveCaseList = [];
+let _moveGrpOpen = {};   // 単価 → 展開状態（倉庫移動のケース選択用）
 let moveCart = [];
 let moveCartOpen = false;
 let isMoveSubmitting = false;
@@ -2640,6 +3111,15 @@ async function openMove(code){
   document.getElementById('moveQty').value = '';
   document.getElementById('moveWarnBox').classList.remove('show');
   moveSelLot = null;
+
+  // ★ケース管理商品は、ケースを選んで移動（出庫と同じUI）
+  if (moveSelProduct.caseManaged) {
+    document.getElementById('moveForm').style.display = 'none';
+    document.getElementById('moveSheetSub').textContent = `${whName(moveFrom)} → ${whName(moveTo)}：移動するケースを選択`;
+    await loadMoveCases(code);
+    return;
+  }
+
   moveMemoByPrice = {};   // 単価 → 直近メモ（移動時の初期値に使う）
   // 移動元の入庫メモを取得して単価ごとに保持
   try {
@@ -2673,6 +3153,124 @@ async function openMove(code){
   } catch(e){
     document.getElementById('moveLotList').innerHTML = '<div class="lot-empty">データ取得失敗</div>';
   }
+}
+
+// ケース管理商品の移動: 移動元の残ケースを一覧表示、複数選択して移動リストへ
+async function loadMoveCases(code){
+  moveCaseSel = {};
+  _moveGrpOpen = {};
+  const box = document.getElementById('moveLotList');
+  box.innerHTML = '<div class="loading"><div class="spin"></div>ケース読込中...</div>';
+  try {
+    const d = await GET_WH(WAREHOUSES[moveFrom].wh, 'getCases', { code });
+    // 既に移動リストに入っているケースは除外
+    const inCartLot = {};
+    moveCart.forEach(c => { if (c.lotId) inCartLot[c.lotId] = true; });
+    moveCaseList = (d.cases || []).filter(c => !inCartLot[c.lotId]);
+    if (!moveCaseList.length){ box.innerHTML = '<div class="lot-empty">移動できるケースがありません</div>'; return; }
+    renderMoveCases();
+  } catch(e){
+    box.innerHTML = '<div class="lot-empty">ケース取得失敗</div>';
+  }
+}
+
+function renderMoveCases(){
+  const box = document.getElementById('moveLotList');
+  const unit = moveSelProduct.unit;
+  const selCount = Object.keys(moveCaseSel).filter(k => moveCaseSel[k]).length;
+
+  // 単価ごとにグループ化
+  const groups = {};
+  moveCaseList.forEach(c => {
+    const p = Number(c.unitPrice);
+    if (!groups[p]) groups[p] = [];
+    groups[p].push(c);
+  });
+  const prices = Object.keys(groups).map(Number).sort((a,b) => a - b);
+
+  const groupsHtml = prices.map(p => {
+    const list = groups[p];
+    const selInGrp = list.filter(c => moveCaseSel[c.lotId]).length;
+    const isOpen = _moveGrpOpen[p];
+    const allSel = selInGrp === list.length;
+
+    const itemsHtml = list.map(c => `
+      <div class="case-out-item ${moveCaseSel[c.lotId] ? 'sel' : ''}" onclick="toggleMoveCase('${c.lotId}')">
+        <div class="case-out-check">${moveCaseSel[c.lotId] ? '✓' : ''}</div>
+        <div class="case-out-info">
+          <div class="case-out-memo">${c.memo ? escapeHtml(c.memo) : '<span class="memo-empty-hint">（メモなし）</span>'}</div>
+          <div class="case-out-sub">${c.dateLabel || c.date}</div>
+        </div>
+      </div>`).join('');
+
+    return `
+      <div class="case-grp ${isOpen ? 'open' : ''} ${selInGrp ? 'has-sel' : ''}">
+        <div class="case-grp-head" onclick="toggleMoveGrp(${p})">
+          <div class="case-grp-info">
+            <div class="case-grp-price">¥${p.toLocaleString()} <span style="font-size:12px;font-weight:600;color:var(--text2)">/単価</span></div>
+            <div class="case-grp-meta">${list.length}ケース${selInGrp ? ` · <b style="color:var(--green)">${selInGrp}件選択</b>` : ''}</div>
+          </div>
+          <span class="case-grp-count ${selInGrp ? 'sel' : ''}">${selInGrp ? selInGrp + '/' + list.length : list.length + '件'}</span>
+          <span class="case-grp-arrow">▶</span>
+        </div>
+        <div class="case-grp-body">
+          <div class="case-grp-selall" onclick="selectAllMoveGrp(${p}, ${!allSel})">
+            ${allSel ? '☑ すべて解除' : '☐ この単価をすべて選択'}
+          </div>
+          ${itemsHtml}
+        </div>
+      </div>`;
+  }).join('');
+
+  box.innerHTML = `
+    <div class="case-out-head">
+      <span>残ケース ${moveCaseList.length}件（${prices.length}単価）</span>
+      <span class="case-out-selcount">${selCount ? selCount + '件 選択中' : 'タップで展開'}</span>
+    </div>
+    ${groupsHtml}
+    <div class="out-date-row" style="margin-top:12px">
+      <label>移動日</label>
+      <input type="date" id="moveCaseDate" value="${fd(new Date())}" />
+    </div>
+    <button class="btn-full btn-out" onclick="addMoveCasesToCart()">
+      選択したケースを移動リストに追加${selCount ? '（'+selCount+'件）' : ''}
+    </button>`;
+}
+
+function toggleMoveGrp(price) {
+  _moveGrpOpen[price] = !_moveGrpOpen[price];
+  renderMoveCases();
+}
+
+function selectAllMoveGrp(price, select) {
+  moveCaseList.forEach(c => {
+    if (Number(c.unitPrice) === Number(price)) moveCaseSel[c.lotId] = !!select;
+  });
+  _moveGrpOpen[price] = true;
+  renderMoveCases();
+}
+
+function toggleMoveCase(lotId){
+  moveCaseSel[lotId] = !moveCaseSel[lotId];
+  const c = moveCaseList.find(x => x.lotId === lotId);
+  if (c) _moveGrpOpen[Number(c.unitPrice)] = true;
+  renderMoveCases();
+}
+
+function addMoveCasesToCart(){
+  const chosen = moveCaseList.filter(c => moveCaseSel[c.lotId]);
+  if (!chosen.length) return toast('ケースを選択してください','err');
+  const date = document.getElementById('moveCaseDate')?.value || fd(new Date());
+  chosen.forEach(c => {
+    moveCart.push({
+      date, code: moveSelProduct.code, name: moveSelProduct.name, unit: moveSelProduct.unit,
+      qty: 1, unitPrice: c.unitPrice, amount: c.unitPrice,
+      memo: c.memo || '', lotId: c.lotId, isCase: true
+    });
+  });
+  closeMove();
+  updateMoveCartUI();
+  toast(`${chosen.length}ケースを移動リストに追加`,'ok');
 }
 
 function selMoveLot(idx, price, remainQty){
@@ -2756,11 +3354,13 @@ async function submitMoveCart(){
   const ok = [], fail = [];
   for (const it of moveCart){
     try {
-      // 1) 移動先へ入庫（種別=移動入、メモは移動先に記録）
-      const rIn = await POST_WH(toWh, { action:'addEntry', date: it.date, type:'移動入', code: it.code, qty: it.qty, unitPrice: it.unitPrice, memo: it.memo || '' });
+      // ケース移動の場合: 移動先は新しいlotId、移動元は元のlotId（元ケースを消す）
+      const destLotId = it.lotId ? genLotId() : '';
+      // 1) 移動先へ入庫（種別=移動入、メモは移動先に記録、ケースなら新lotId）
+      const rIn = await POST_WH(toWh, { action:'addEntry', date: it.date, type:'移動入', code: it.code, qty: it.qty, unitPrice: it.unitPrice, memo: it.memo || '', lotId: destLotId });
       if (!rIn || rIn.success === false) throw new Error('移動入 失敗: ' + (rIn?.error||''));
-      // 2) 移動元から出庫（種別=移動出、メモなし）
-      const rOut = await POST_WH(fromWh, { action:'addEntry', date: it.date, type:'移動出', code: it.code, qty: it.qty, unitPrice: it.unitPrice });
+      // 2) 移動元から出庫（種別=移動出、ケースなら元lotIdで消す）
+      const rOut = await POST_WH(fromWh, { action:'addEntry', date: it.date, type:'移動出', code: it.code, qty: it.qty, unitPrice: it.unitPrice, lotId: it.lotId || '' });
       if (!rOut || rOut.success === false){
         fail.push(`${it.name}: 移動先へ入庫済みだが移動元の出庫に失敗（手動修正が必要）`);
         continue;
