@@ -1726,14 +1726,13 @@ let caseOutSel = {};   // lotId → true（選択中）
 let caseOutList = [];   // 現在表示中の残ケース
 let _caseGrpOpen = {};  // 単価 → 展開状態（true=開いている）
 
-async function loadCaseOut(code) {
+async function loadCaseOut(code, preCases) {
   caseOutSel = {};
   _caseGrpOpen = {};
   const box = document.getElementById('lotList');
   box.innerHTML = '<div class="loading"><div class="spin"></div>ケース読込中...</div>';
   try {
-    const d = await GET('getCases', { code });
-    caseOutList = d.cases || [];
+    caseOutList = preCases || ((await GET('getCases', { code })).cases || []);
     if (!caseOutList.length) {
       box.innerHTML = '<div class="lot-empty">出庫できるケースがありません</div>';
       return;
@@ -1861,13 +1860,13 @@ async function submitCaseOut() {
 }
 
 // 入庫メモ明細を取得して、出庫モーダル上部に表示（表示専用・在庫計算には無関係）
-async function loadMemoEntries(code, unit) {
+//   preEntries を渡せば API を呼ばずにそれを使う（getProductDetail でまとめ取得済みの時）
+async function loadMemoEntries(code, unit, preEntries) {
   const box = document.getElementById('memoEntries');
   if (!box) return;
   box.innerHTML = '';
   try {
-    const d = await GET('getInEntries', { code });
-    const entries = d.entries || [];
+    const entries = preEntries || ((await GET('getInEntries', { code })).entries || []);
     if (!entries.length) { box.innerHTML = ''; return; }
     const withMemo = entries.filter(e => e.memo && e.memo.trim() !== '').length;
     box.innerHTML = `
@@ -1958,45 +1957,54 @@ async function openOut(code) {
   document.getElementById('warnBox').classList.remove('show');
   selLot = null;
 
+  // ★商品を開くとき lots+cases+inEntries を1リクエストでまとめ取得（シート読み取り1回）
+  let detail;
+  try {
+    detail = await GET('getProductDetail', { code });
+  } catch(e) { detail = null; }
+
   // ★ケース管理商品は専用フロー（ケースを選んで出庫）
   if (selProduct.caseManaged) {
     document.getElementById('memoEntries').innerHTML = '';
     document.querySelector('#outOverlay .sheet-sub').textContent = '出庫するケースを選択してください';
-    await loadCaseOut(code);
+    await loadCaseOut(code, detail ? detail.cases : undefined);
     return;
   }
   document.querySelector('#outOverlay .sheet-sub').textContent = '出庫するロットを選択してください';
-  // メモ付き入庫明細を並行取得して、ロット一覧の上に表示
-  loadMemoEntries(code, selProduct.unit);
-  try {
-    const d = await GET('getLots', { code });
-    const lotArr = d.lots || [];
-    if (!lotArr.length) {
-      document.getElementById('lotList').innerHTML = '<div class="lot-empty">在庫ロットがありません</div>';
-      return;
-    }
-    document.getElementById('lotList').innerHTML = lotArr.map((l,i) => {
-      // 出庫カートに同じ商品・同じ単価で既に入っている数量を差し引いて表示
-      const queued = outCart
-        .filter(c => c.code == code && c.unitPrice == l.unitPrice)
-        .reduce((s,c) => s + c.qty, 0);
-      const remain = fn(l.remainQty - queued);
-      const remainAmt = Math.round(remain * l.unitPrice);
-      const queuedNote = queued ? `<span style="font-size:11px;color:var(--accent);font-weight:700"> （リスト内 -${fn(queued)}${selProduct.unit}）</span>` : '';
-      return `<div class="lot-card" id="lc_${i}" onclick="selLotCard(${i},${l.unitPrice},${remain})">
-        <div class="lot-card-top">
-          <div class="lot-price">¥${l.unitPrice.toLocaleString()}<span style="font-size:12px;color:var(--text2)"> /単価</span></div>
-          <div class="lot-badge">${remain} ${selProduct.unit}</div>
-        </div>
-        <div class="lot-card-row">
-          <div class="lot-stat"><div class="lot-stat-label">残数量</div><div class="lot-stat-val">${remain} ${selProduct.unit}${queuedNote}</div></div>
-          <div class="lot-stat"><div class="lot-stat-label">残金額</div><div class="lot-stat-val">¥${remainAmt.toLocaleString()}</div></div>
-        </div>
-      </div>`;
-    }).join('');
-  } catch(e) {
+  // まとめ取得済みの入庫メモを表示（API 再取得しない）
+  loadMemoEntries(code, selProduct.unit, detail ? detail.entries : undefined);
+  if (!detail) {
     document.getElementById('lotList').innerHTML = '<div class="lot-empty">データ取得失敗</div>';
+    return;
   }
+  renderOutLots(detail.lots || [], code);
+}
+
+// 出庫ロット一覧を描画（openOut から分離。まとめ取得した lots を使う）
+function renderOutLots(lotArr, code) {
+  if (!lotArr.length) {
+    document.getElementById('lotList').innerHTML = '<div class="lot-empty">在庫ロットがありません</div>';
+    return;
+  }
+  document.getElementById('lotList').innerHTML = lotArr.map((l,i) => {
+    // 出庫カートに同じ商品・同じ単価で既に入っている数量を差し引いて表示
+    const queued = outCart
+      .filter(c => c.code == code && c.unitPrice == l.unitPrice)
+      .reduce((s,c) => s + c.qty, 0);
+    const remain = fn(l.remainQty - queued);
+    const remainAmt = Math.round(remain * l.unitPrice);
+    const queuedNote = queued ? `<span style="font-size:11px;color:var(--accent);font-weight:700"> （リスト内 -${fn(queued)}${selProduct.unit}）</span>` : '';
+    return `<div class="lot-card" id="lc_${i}" onclick="selLotCard(${i},${l.unitPrice},${remain})">
+      <div class="lot-card-top">
+        <div class="lot-price">¥${l.unitPrice.toLocaleString()}<span style="font-size:12px;color:var(--text2)"> /単価</span></div>
+        <div class="lot-badge">${remain} ${selProduct.unit}</div>
+      </div>
+      <div class="lot-card-row">
+        <div class="lot-stat"><div class="lot-stat-label">残数量</div><div class="lot-stat-val">${remain} ${selProduct.unit}${queuedNote}</div></div>
+        <div class="lot-stat"><div class="lot-stat-label">残金額</div><div class="lot-stat-val">¥${remainAmt.toLocaleString()}</div></div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function selLotCard(idx, price, remainQty) {
@@ -3112,27 +3120,33 @@ async function openMove(code){
   document.getElementById('moveWarnBox').classList.remove('show');
   moveSelLot = null;
 
+  // ★移動元の lots+cases+inEntries を1リクエストでまとめ取得
+  let mdetail;
+  try {
+    mdetail = await GET_WH(WAREHOUSES[moveFrom].wh, 'getProductDetail', { code });
+  } catch(e) { mdetail = null; }
+
   // ★ケース管理商品は、ケースを選んで移動（出庫と同じUI）
   if (moveSelProduct.caseManaged) {
     document.getElementById('moveForm').style.display = 'none';
     document.getElementById('moveSheetSub').textContent = `${whName(moveFrom)} → ${whName(moveTo)}：移動するケースを選択`;
-    await loadMoveCases(code);
+    await loadMoveCases(code, mdetail ? mdetail.cases : undefined);
     return;
   }
 
   moveMemoByPrice = {};   // 単価 → 直近メモ（移動時の初期値に使う）
-  // 移動元の入庫メモを取得して単価ごとに保持
-  try {
-    const em = await GET_WH(WAREHOUSES[moveFrom].wh, 'getInEntries', { code });
-    (em.entries || []).forEach(e => {
-      if (e.memo && e.memo.trim() !== '' && !moveMemoByPrice[e.unitPrice]) {
-        moveMemoByPrice[e.unitPrice] = e.memo;   // 新しい順で来るので最初=最新
-      }
-    });
-  } catch(e) { /* メモ取得失敗は無視 */ }
-  try {
-    const d = await GET_WH(WAREHOUSES[moveFrom].wh, 'getLots', { code });
-    const lotArr = d.lots || [];
+  // まとめ取得した入庫メモを単価ごとに保持
+  (mdetail && mdetail.entries ? mdetail.entries : []).forEach(e => {
+    if (e.memo && e.memo.trim() !== '' && !moveMemoByPrice[e.unitPrice]) {
+      moveMemoByPrice[e.unitPrice] = e.memo;   // 新しい順で来るので最初=最新
+    }
+  });
+  if (!mdetail) {
+    document.getElementById('moveLotList').innerHTML = '<div class="lot-empty">データ取得失敗</div>';
+    return;
+  }
+  {
+    const lotArr = mdetail.lots || [];
     if (!lotArr.length){ document.getElementById('moveLotList').innerHTML = '<div class="lot-empty">在庫ロットがありません</div>'; return; }
     document.getElementById('moveLotList').innerHTML = lotArr.map((l,i) => {
       const queued = moveCart.filter(c => c.code == code && c.unitPrice == l.unitPrice).reduce((s,c)=>s+c.qty,0);
@@ -3150,23 +3164,21 @@ async function openMove(code){
         </div>
       </div>`;
     }).join('');
-  } catch(e){
-    document.getElementById('moveLotList').innerHTML = '<div class="lot-empty">データ取得失敗</div>';
   }
 }
 
 // ケース管理商品の移動: 移動元の残ケースを一覧表示、複数選択して移動リストへ
-async function loadMoveCases(code){
+async function loadMoveCases(code, preCases){
   moveCaseSel = {};
   _moveGrpOpen = {};
   const box = document.getElementById('moveLotList');
   box.innerHTML = '<div class="loading"><div class="spin"></div>ケース読込中...</div>';
   try {
-    const d = await GET_WH(WAREHOUSES[moveFrom].wh, 'getCases', { code });
+    const cases = preCases || ((await GET_WH(WAREHOUSES[moveFrom].wh, 'getCases', { code })).cases || []);
     // 既に移動リストに入っているケースは除外
     const inCartLot = {};
     moveCart.forEach(c => { if (c.lotId) inCartLot[c.lotId] = true; });
-    moveCaseList = (d.cases || []).filter(c => !inCartLot[c.lotId]);
+    moveCaseList = cases.filter(c => !inCartLot[c.lotId]);
     if (!moveCaseList.length){ box.innerHTML = '<div class="lot-empty">移動できるケースがありません</div>'; return; }
     renderMoveCases();
   } catch(e){
