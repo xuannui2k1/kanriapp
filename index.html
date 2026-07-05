@@ -1323,7 +1323,7 @@ input::placeholder{color:var(--text3)}
       </div>
       <div class="warn-box" id="warnBox">在庫不足！マイナスになります</div>
       <button class="btn-full btn-out" onclick="addOutToCart()">出庫リストに追加</button>
-      <button class="btn-full btn-cancel mt8" onclick="closeOut()">キャンセル</button>
+      <button class="btn-full btn-cancel mt8" onclick="closeOut()">閉じる</button>
     </div>
   </div>
 </div>
@@ -1352,7 +1352,7 @@ input::placeholder{color:var(--text3)}
       </div>
       <div class="warn-box" id="moveWarnBox">在庫不足！マイナスになります</div>
       <button class="btn-full btn-out" onclick="addMoveToCart()">移動リストに追加</button>
-      <button class="btn-full btn-cancel mt8" onclick="closeMove()">キャンセル</button>
+      <button class="btn-full btn-cancel mt8" onclick="closeMove()">閉じる</button>
     </div>
   </div>
 </div>
@@ -1850,9 +1850,13 @@ async function submitCaseOut() {
     await POST({ action:'addBatchEntry', entries });
     summaryData = null;
     toast(`${chosen.length}ケースを出庫しました`,'ok');
-    closeOut();
     await loadStock();
     renderActiveTab();
+    // ★同じ商品で続けて出庫できるよう、モーダルは開いたまま残りケースを再取得。
+    //   残ケースが無くなったら閉じる。
+    await loadCaseOut(selProduct.code);
+    if (!caseOutList.length) closeOut();
+    else if (btn) { btn.textContent = '選択したケースを出庫'; btn.disabled = false; }
   } catch(e) {
     toast('出庫失敗','err');
     if (btn) { btn.textContent = '選択したケースを出庫'; btn.disabled = false; }
@@ -1956,6 +1960,7 @@ async function openOut(code) {
   document.getElementById('outQty').value = '';
   document.getElementById('warnBox').classList.remove('show');
   selLot = null;
+  _lastOutLots = null;
 
   // ★商品を開くとき lots+cases+inEntries を1リクエストでまとめ取得（シート読み取り1回）
   let detail;
@@ -1981,7 +1986,9 @@ async function openOut(code) {
 }
 
 // 出庫ロット一覧を描画（openOut から分離。まとめ取得した lots を使う）
+let _lastOutLots = null;   // 現在開いている商品のロット一覧（カート追加後の再描画用）
 function renderOutLots(lotArr, code) {
+  _lastOutLots = lotArr;
   if (!lotArr.length) {
     document.getElementById('lotList').innerHTML = '<div class="lot-empty">在庫ロットがありません</div>';
     return;
@@ -2047,9 +2054,14 @@ function addOutToCart() {
     qty, unitPrice: selLot.price, amount: qty * selLot.price,
     remainQty: selLot.remainQty, over
   });
-  closeOut();
   updateOutCartUI();
   toast(`${selProduct.name} ${qty}${selProduct.unit} を出庫リストに追加`,'ok');
+  // ★同じ商品で続けて出庫できるよう、モーダルは閉じずに残す。
+  //   ロット一覧を再描画（カート分を差し引いた残数に更新）し、入力欄をリセット。
+  document.getElementById('outQty').value = '';
+  document.getElementById('outForm').style.display = 'none';
+  selLot = null;
+  if (_lastOutLots) renderOutLots(_lastOutLots, selProduct.code);
 }
 
 function updateOutCartUI() {
@@ -3119,6 +3131,7 @@ async function openMove(code){
   document.getElementById('moveQty').value = '';
   document.getElementById('moveWarnBox').classList.remove('show');
   moveSelLot = null;
+  _lastMoveLots = null;
 
   // ★移動元の lots+cases+inEntries を1リクエストでまとめ取得
   let mdetail;
@@ -3146,25 +3159,31 @@ async function openMove(code){
     return;
   }
   {
-    const lotArr = mdetail.lots || [];
-    if (!lotArr.length){ document.getElementById('moveLotList').innerHTML = '<div class="lot-empty">在庫ロットがありません</div>'; return; }
-    document.getElementById('moveLotList').innerHTML = lotArr.map((l,i) => {
-      const queued = moveCart.filter(c => c.code == code && c.unitPrice == l.unitPrice).reduce((s,c)=>s+c.qty,0);
-      const remain = fn(l.remainQty - queued);
-      const remainAmt = Math.round((l.remainQty - queued) * l.unitPrice);
-      const queuedNote = queued ? `<span style="font-size:11px;color:var(--accent);font-weight:700"> （リスト内 -${fn(queued)}${moveSelProduct.unit}）</span>` : '';
-      return `<div class="lot-card" id="mlc_${i}" onclick="selMoveLot(${i},${l.unitPrice},${l.remainQty - queued})">
-        <div class="lot-card-top">
-          <div class="lot-price">¥${l.unitPrice.toLocaleString()}<span style="font-size:12px;color:var(--text2)"> /単価</span></div>
-          <div class="lot-badge">${remain} ${moveSelProduct.unit}</div>
-        </div>
-        <div class="lot-card-row">
-          <div class="lot-stat"><div class="lot-stat-label">残数量</div><div class="lot-stat-val">${remain} ${moveSelProduct.unit}${queuedNote}</div></div>
-          <div class="lot-stat"><div class="lot-stat-label">残金額</div><div class="lot-stat-val">¥${remainAmt.toLocaleString()}</div></div>
-        </div>
-      </div>`;
-    }).join('');
+    renderMoveLots(mdetail.lots || [], code);
   }
+}
+
+// 移動ロット一覧を描画（移動元の lots を使う。カート追加後の再描画にも使う）
+let _lastMoveLots = null;
+function renderMoveLots(lotArr, code){
+  _lastMoveLots = lotArr;
+  if (!lotArr.length){ document.getElementById('moveLotList').innerHTML = '<div class="lot-empty">在庫ロットがありません</div>'; return; }
+  document.getElementById('moveLotList').innerHTML = lotArr.map((l,i) => {
+    const queued = moveCart.filter(c => c.code == code && c.unitPrice == l.unitPrice).reduce((s,c)=>s+c.qty,0);
+    const remain = fn(l.remainQty - queued);
+    const remainAmt = Math.round((l.remainQty - queued) * l.unitPrice);
+    const queuedNote = queued ? `<span style="font-size:11px;color:var(--accent);font-weight:700"> （リスト内 -${fn(queued)}${moveSelProduct.unit}）</span>` : '';
+    return `<div class="lot-card" id="mlc_${i}" onclick="selMoveLot(${i},${l.unitPrice},${l.remainQty - queued})">
+      <div class="lot-card-top">
+        <div class="lot-price">¥${l.unitPrice.toLocaleString()}<span style="font-size:12px;color:var(--text2)"> /単価</span></div>
+        <div class="lot-badge">${remain} ${moveSelProduct.unit}</div>
+      </div>
+      <div class="lot-card-row">
+        <div class="lot-stat"><div class="lot-stat-label">残数量</div><div class="lot-stat-val">${remain} ${moveSelProduct.unit}${queuedNote}</div></div>
+        <div class="lot-stat"><div class="lot-stat-label">残金額</div><div class="lot-stat-val">¥${remainAmt.toLocaleString()}</div></div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ケース管理商品の移動: 移動元の残ケースを一覧表示、複数選択して移動リストへ
@@ -3318,9 +3337,13 @@ function addMoveToCart(){
     date, code: moveSelProduct.code, name: moveSelProduct.name, unit: moveSelProduct.unit,
     qty, unitPrice: moveSelLot.price, amount: qty * moveSelLot.price, memo
   });
-  closeMove();
   updateMoveCartUI();
   toast(`${moveSelProduct.name} ${qty}${moveSelProduct.unit} を移動リストに追加`,'ok');
+  // ★同じ商品で続けて移動できるよう、モーダルは閉じずに残す。
+  document.getElementById('moveQty').value = '';
+  document.getElementById('moveForm').style.display = 'none';
+  moveSelLot = null;
+  if (_lastMoveLots) renderMoveLots(_lastMoveLots, moveSelProduct.code);
 }
 
 function updateMoveCartUI(){
