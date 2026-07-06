@@ -173,6 +173,19 @@ input::placeholder{color:var(--text3)}
   padding:8px 10px;font-size:16px;cursor:pointer;line-height:1;
 }
 .in-cart-item-memo{font-size:12px;color:#8a6d1a;margin-top:3px;font-weight:600;word-break:break-word}
+/* ロットカード内に表示する入庫メモ */
+.lot-memo-list{
+  margin-top:10px;padding-top:10px;border-top:1px dashed var(--border2);
+  display:flex;flex-direction:column;gap:6px;
+}
+.lot-memo-item{
+  display:flex;align-items:flex-start;gap:8px;
+  background:#fffdf5;border:1px solid #f0e2b0;border-left:3px solid #e6b800;
+  border-radius:8px;padding:7px 10px;
+}
+.lot-memo-date{font-size:11px;font-weight:700;color:var(--navy);flex-shrink:0;padding-top:1px}
+.lot-memo-text{flex:1;font-size:13px;color:#5a4a1a;line-height:1.45;word-break:break-word;min-width:0}
+.lot-memo-item .memo-edit-btn{font-size:14px;padding:0 2px}
 
 /* ── ケース管理 ── */
 .case-form{padding:4px 0}
@@ -203,7 +216,10 @@ input::placeholder{color:var(--text3)}
   width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
 .case-draft-memo{flex:1;font-size:14px;color:#5a4a1a;font-weight:600}
+.case-draft-price{font-size:14px;font-weight:800;color:var(--navy);flex-shrink:0}
 .case-draft-rm{background:none;border:none;color:var(--red);font-size:20px;cursor:pointer;padding:0 4px;line-height:1}
+.case-add-row .case-price-in{flex:0 0 42%}
+.case-price-hint{font-size:11px;color:var(--text2);margin-top:5px}
 
 .case-out-head{
   display:flex;justify-content:space-between;align-items:center;
@@ -1924,7 +1940,12 @@ async function saveEditMemo(rowNum) {
     toast('メモを更新しました','ok');
     // 再表示
     if (ctx.after === 'reload' && selProduct) {
-      await loadMemoEntries(selProduct.code, selProduct.unit);
+      // ローカル保持しているメモ明細を更新してロットカードを再描画
+      if (_lastOutEntries) {
+        const ent = _lastOutEntries.find(e => e.rowNum === rowNum);
+        if (ent) ent.memo = memo;
+      }
+      if (_lastOutLots) renderOutLots(_lastOutLots, selProduct.code);
     } else if (ctx.after === 'cases' && selProduct) {
       await loadCaseOut(selProduct.code);
     }
@@ -1939,7 +1960,7 @@ function cancelEditMemo(rowNum) {
     // 単純に再読込して元に戻す
     const ctx = _editMemoCtx[rowNum] || {};
     if (ctx.after === 'cases') loadCaseOut(selProduct.code);
-    else loadMemoEntries(selProduct.code, selProduct.unit);
+    else if (_lastOutLots) renderOutLots(_lastOutLots, selProduct.code);
   }
 }
 
@@ -1976,19 +1997,22 @@ async function openOut(code) {
     return;
   }
   document.querySelector('#outOverlay .sheet-sub').textContent = '出庫するロットを選択してください';
-  // まとめ取得済みの入庫メモを表示（API 再取得しない）
-  loadMemoEntries(code, selProduct.unit, detail ? detail.entries : undefined);
+  // 分離表示していた入庫メモ欄はクリア（メモは各ロットカード内に表示する）
+  document.getElementById('memoEntries').innerHTML = '';
   if (!detail) {
     document.getElementById('lotList').innerHTML = '<div class="lot-empty">データ取得失敗</div>';
     return;
   }
-  renderOutLots(detail.lots || [], code);
+  renderOutLots(detail.lots || [], code, detail.entries || []);
 }
 
 // 出庫ロット一覧を描画（openOut から分離。まとめ取得した lots を使う）
-let _lastOutLots = null;   // 現在開いている商品のロット一覧（カート追加後の再描画用）
-function renderOutLots(lotArr, code) {
+let _lastOutLots = null;      // 現在開いている商品のロット一覧（カート追加後の再描画用）
+let _lastOutEntries = null;   // 現在開いている商品の入庫メモ明細（単価ごとに表示するため保持）
+function renderOutLots(lotArr, code, entries) {
   _lastOutLots = lotArr;
+  if (entries !== undefined) _lastOutEntries = entries;
+  const allEntries = _lastOutEntries || [];
   if (!lotArr.length) {
     document.getElementById('lotList').innerHTML = '<div class="lot-empty">在庫ロットがありません</div>';
     return;
@@ -2001,6 +2025,18 @@ function renderOutLots(lotArr, code) {
     const remain = fn(l.remainQty - queued);
     const remainAmt = Math.round(remain * l.unitPrice);
     const queuedNote = queued ? `<span style="font-size:11px;color:var(--accent);font-weight:700"> （リスト内 -${fn(queued)}${selProduct.unit}）</span>` : '';
+    // この単価に紐づく入庫メモ明細をカード内に表示
+    const lotEntries = allEntries.filter(e => Number(e.unitPrice) === Number(l.unitPrice));
+    const memoHtml = lotEntries.length ? `
+      <div class="lot-memo-list" onclick="event.stopPropagation()">
+        ${lotEntries.map(e => `
+          <div class="lot-memo-item" id="me_${e.rowNum}">
+            <span class="lot-memo-date">${e.dateLabel || e.date}</span>
+            <div class="lot-memo-text" id="met_${e.rowNum}">${e.memo ? escapeHtml(e.memo) : '<span class="memo-empty-hint">メモなし</span>'}</div>
+            <button class="memo-edit-btn" onclick="startEditMemo(${e.rowNum},${code},'reload')" title="編集">✏️</button>
+          </div>
+        `).join('')}
+      </div>` : '';
     return `<div class="lot-card" id="lc_${i}" onclick="selLotCard(${i},${l.unitPrice},${remain})">
       <div class="lot-card-top">
         <div class="lot-price">¥${l.unitPrice.toLocaleString()}<span style="font-size:12px;color:var(--text2)"> /単価</span></div>
@@ -2010,6 +2046,7 @@ function renderOutLots(lotArr, code) {
         <div class="lot-stat"><div class="lot-stat-label">残数量</div><div class="lot-stat-val">${remain} ${selProduct.unit}${queuedNote}</div></div>
         <div class="lot-stat"><div class="lot-stat-label">残金額</div><div class="lot-stat-val">¥${remainAmt.toLocaleString()}</div></div>
       </div>
+      ${memoHtml}
     </div>`;
   }).join('');
 }
@@ -2279,7 +2316,7 @@ function calcAmt(code) {
 //   1つの日付・単価を共通に、ケースを何個でも追加できる。
 //   各ケース = 数量1・独自lotId・メモ（例「12匹」）。
 // ============================================================
-let caseDraft = {};   // code → [{memo}]  一時的な入力中ケース
+let caseDraft = {};   // code → [{memo, price}]  一時的な入力中ケース
 
 function renderCaseInForm(code, s, today) {
   const form = document.getElementById(`pf_${code}`);
@@ -2289,20 +2326,19 @@ function renderCaseInForm(code, s, today) {
 
   form.innerHTML = `
     <div class="case-form">
-      <div class="case-note"><i class="memo-ico">📦</i>ケース管理商品：1ケースずつ登録します（数量は各1）</div>
+      <div class="case-note"><i class="memo-ico">📦</i>ケース管理商品：1ケースずつ登録します（単価はケースごとに設定可）</div>
       <div class="form-date-row">
         <label>入庫日</label>
         <input type="date" id="cd_${code}" value="${today}" />
       </div>
-      <div class="fg">
-        <label>単価（円 / ケース）</label>
-        <input type="number" id="cp_${code}" placeholder="例: 42000" min="0" step="1" />
-      </div>
       <div class="case-add-row">
+        <input type="number" id="cp_${code}" class="case-price-in" placeholder="単価（円/ケース）" min="0" step="1"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('cm_${code}').focus();}" />
         <input type="text" id="cm_${code}" placeholder="メモ（例: 12匹）" maxlength="100"
           onkeydown="if(event.key==='Enter'){event.preventDefault();addCaseDraft(${code});}" />
-        <button class="case-add-btn" onclick="addCaseDraft(${code})">＋ ケース追加</button>
+        <button class="case-add-btn" onclick="addCaseDraft(${code})">＋ 追加</button>
       </div>
+      <div class="case-price-hint">単価を空にすると直前のケースと同じ単価になります</div>
       <div class="case-draft-list" id="cdl_${code}"></div>
       <div class="form-btns">
         <button class="btn-add" onclick="commitCasesToCart(${code},'${s.name}','${s.unit}')">カートに追加</button>
@@ -2314,11 +2350,24 @@ function renderCaseInForm(code, s, today) {
 
 function addCaseDraft(code) {
   const memoEl = document.getElementById(`cm_${code}`);
+  const priceEl = document.getElementById(`cp_${code}`);
   const memo = (memoEl?.value || '').trim();
   if (!caseDraft[code]) caseDraft[code] = [];
-  caseDraft[code].push({ memo });
+  let price = parseFloat(priceEl?.value);
+  // 単価が空なら直前のケースの単価を引き継ぐ
+  if (!price || price <= 0) {
+    const prev = caseDraft[code][caseDraft[code].length - 1];
+    price = prev ? prev.price : null;
+  }
+  if (!price || price <= 0) {
+    toast('単価を入力してください','err');
+    priceEl?.focus();
+    return;
+  }
+  caseDraft[code].push({ memo, price });
   memoEl.value = '';
-  memoEl.focus();
+  priceEl.value = '';
+  priceEl.focus();
   renderCaseDraft(code);
 }
 
@@ -2332,10 +2381,12 @@ function renderCaseDraft(code) {
   if (!box) return;
   const list = caseDraft[code] || [];
   if (!list.length) { box.innerHTML = '<div class="case-draft-empty">まだケースがありません。上で追加してください。</div>'; return; }
-  box.innerHTML = `<div class="case-draft-count">追加予定 ${list.length} ケース</div>` +
+  const total = list.reduce((s,c) => s + (c.price || 0), 0);
+  box.innerHTML = `<div class="case-draft-count">追加予定 ${list.length} ケース ・ 合計 ¥${total.toLocaleString()}</div>` +
     list.map((c,i) => `
       <div class="case-draft-item">
         <span class="case-draft-no">${i+1}</span>
+        <span class="case-draft-price">¥${Number(c.price).toLocaleString()}</span>
         <span class="case-draft-memo">${c.memo ? escapeHtml(c.memo) : '（メモなし）'}</span>
         <button class="case-draft-rm" onclick="removeCaseDraft(${code},${i})">×</button>
       </div>`).join('');
@@ -2351,11 +2402,10 @@ function genLotId() {
 function commitCasesToCart(code, name, unit) {
   const list = caseDraft[code] || [];
   if (!list.length) return toast('ケースを追加してください','err');
-  const price = parseFloat(document.getElementById(`cp_${code}`)?.value);
   const date = document.getElementById(`cd_${code}`)?.value || fd(new Date());
-  if (!price || price <= 0) return toast('単価を入力してください','err');
 
   list.forEach(c => {
+    const price = Number(c.price);
     inCart.push({
       date, type:'入庫', code, name, unit,
       qty: 1, unitPrice: price, amount: price,
@@ -2365,7 +2415,7 @@ function commitCasesToCart(code, name, unit) {
   const n = list.length;
   caseDraft[code] = [];
   renderCaseDraft(code);
-  document.getElementById(`cp_${code}`).value = '';
+  const priceEl = document.getElementById(`cp_${code}`); if (priceEl) priceEl.value = '';
   updateInCartUI();
   toast(`${name} ${n}ケースをカートに追加`,'ok');
 }
