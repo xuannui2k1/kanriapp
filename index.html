@@ -574,39 +574,53 @@ input::placeholder{color:var(--text3)}
 .overlay.open{display:flex}
 .sheet{
   background:var(--surface);border-radius:24px 24px 0 0;
-  padding:0 0 40px;width:100%;
+  /* ★iPhone のホームバー分だけ下に余白を足す（ボタンが隠れないように） */
+  padding:0 0 calc(40px + env(safe-area-inset-bottom, 0px));
+  width:100%;
   box-shadow:0 -4px 32px rgba(0,0,0,.15);
   animation:slideUp .3s cubic-bezier(.22,1,.36,1);
   max-height:88vh;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;   /* シート内スクロールが背面に伝播しない */
 }
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .sheet-handle{
   width:40px;height:4px;background:var(--border2);
-  border-radius:2px;margin:14px auto 0;
+  border-radius:2px;margin:14px auto 14px;
+  transition:background .12s;
 }
+/* ★ヘッダー全体をタップして閉じられるようにする。
+   ハンドル＋タイトル部分がそのまま「閉じるボタン」になるので、
+   背面の暗い部分や小さな✕を狙う必要がない。
+   スクロールしても常に画面上部に残る（sticky）。 */
 .sheet-header{
-  padding:16px 18px 14px;
+  /* handle をヘッダー内に入れたので上パディングを詰める */
+  padding:0 18px 14px;
   border-bottom:1px solid var(--border);
-  /* ★スクロールしても閉じるボタンが常に見えるように固定 */
   position:sticky;top:0;z-index:5;
   background:var(--surface);
-  display:flex;align-items:flex-start;gap:12px;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;   /* iOS のダブルタップズームを無効化 */
+  transition:background .12s;
+  user-select:none;-webkit-user-select:none;
+  /* 角丸をシートと揃える（sticky で上に張り付いた時に角が欠けないように） */
+  border-radius:24px 24px 0 0;
 }
-.sheet-header-txt{flex:1;min-width:0}
-/* ★シートを閉じるボタン（背景の暗い部分をタップしなくても閉じられる） */
-.sheet-close{
-  flex-shrink:0;width:34px;height:34px;border-radius:50%;
-  border:1.5px solid var(--border2);background:var(--surface2);
-  color:var(--text2);font-size:19px;line-height:1;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;padding:0;margin-top:1px;
-}
-.sheet-close:active{transform:scale(.9);background:var(--border)}
+.sheet-header:active{background:var(--surface2)}
+/* ハンドルもヘッダーと一緒に固定し、押下時に色を変えて反応を伝える */
+.sheet-header:active .sheet-handle{background:var(--text2)}
 .sheet-title{
   font-family:var(--font);
   font-weight:700;font-size:19px;letter-spacing:-.3px;
 }
 .sheet-sub{font-size:12px;color:var(--text2);margin-top:3px;font-weight:500}
+/* ★ヘッダーが閉じるボタンであることを明示するヒント */
+.sheet-header::after{
+  content:'タップで閉じる';
+  display:block;font-size:10.5px;color:var(--text2);opacity:.6;
+  margin-top:6px;letter-spacing:.2px;
+}
 
 /* ロットカード */
 .lot-list{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
@@ -1354,13 +1368,10 @@ input::placeholder{color:var(--text3)}
 <!-- 出庫 LOT MODAL -->
 <div class="overlay" id="outOverlay" onclick="if(event.target===this)closeOut()">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-header">
-      <div class="sheet-header-txt">
-        <div class="sheet-title" id="outSheetName">—</div>
-        <div class="sheet-sub">出庫するロットを選択してください</div>
-      </div>
-      <button class="sheet-close" onclick="closeOut()" aria-label="閉じる">✕</button>
+    <div class="sheet-header" onclick="closeOut()" role="button" tabindex="0" aria-label="閉じる">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title" id="outSheetName">—</div>
+      <div class="sheet-sub">出庫するロットを選択してください</div>
     </div>
     <div class="memo-entries" id="memoEntries"></div>
     <div class="lot-list" id="lotList"></div>
@@ -1383,13 +1394,10 @@ input::placeholder{color:var(--text3)}
 <!-- 倉庫移動 LOT MODAL -->
 <div class="overlay" id="moveOverlay" onclick="if(event.target===this)closeMove()">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-header">
-      <div class="sheet-header-txt">
-        <div class="sheet-title" id="moveSheetName">—</div>
-        <div class="sheet-sub" id="moveSheetSub">移動するロットを選択してください</div>
-      </div>
-      <button class="sheet-close" onclick="closeMove()" aria-label="閉じる">✕</button>
+    <div class="sheet-header" onclick="closeMove()" role="button" tabindex="0" aria-label="閉じる">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title" id="moveSheetName">—</div>
+      <div class="sheet-sub" id="moveSheetSub">移動するロットを選択してください</div>
     </div>
     <div class="lot-list" id="moveLotList"></div>
     <div class="out-form" id="moveForm" style="display:none">
@@ -1415,13 +1423,10 @@ input::placeholder{color:var(--text3)}
 <!-- 新商品 MODAL -->
 <div class="overlay" id="npOverlay" onclick="if(event.target===this)closeNP()">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-header">
-      <div class="sheet-header-txt">
-        <div class="sheet-title">新商品を追加</div>
-        <div class="sheet-sub">商品マスターに登録します</div>
-      </div>
-      <button class="sheet-close" onclick="closeNP()" aria-label="閉じる">✕</button>
+    <div class="sheet-header" onclick="closeNP()" role="button" tabindex="0" aria-label="閉じる">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">新商品を追加</div>
+      <div class="sheet-sub">商品マスターに登録します</div>
     </div>
     <div style="padding:16px 0 0">
       <div class="np-form-group">
