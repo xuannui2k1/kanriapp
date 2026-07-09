@@ -587,7 +587,21 @@ input::placeholder{color:var(--text3)}
 .sheet-header{
   padding:16px 18px 14px;
   border-bottom:1px solid var(--border);
+  /* ★スクロールしても閉じるボタンが常に見えるように固定 */
+  position:sticky;top:0;z-index:5;
+  background:var(--surface);
+  display:flex;align-items:flex-start;gap:12px;
 }
+.sheet-header-txt{flex:1;min-width:0}
+/* ★シートを閉じるボタン（背景の暗い部分をタップしなくても閉じられる） */
+.sheet-close{
+  flex-shrink:0;width:34px;height:34px;border-radius:50%;
+  border:1.5px solid var(--border2);background:var(--surface2);
+  color:var(--text2);font-size:19px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;padding:0;margin-top:1px;
+}
+.sheet-close:active{transform:scale(.9);background:var(--border)}
 .sheet-title{
   font-family:var(--font);
   font-weight:700;font-size:19px;letter-spacing:-.3px;
@@ -1342,8 +1356,11 @@ input::placeholder{color:var(--text3)}
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-title" id="outSheetName">—</div>
-      <div class="sheet-sub">出庫するロットを選択してください</div>
+      <div class="sheet-header-txt">
+        <div class="sheet-title" id="outSheetName">—</div>
+        <div class="sheet-sub">出庫するロットを選択してください</div>
+      </div>
+      <button class="sheet-close" onclick="closeOut()" aria-label="閉じる">✕</button>
     </div>
     <div class="memo-entries" id="memoEntries"></div>
     <div class="lot-list" id="lotList"></div>
@@ -1368,8 +1385,11 @@ input::placeholder{color:var(--text3)}
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-title" id="moveSheetName">—</div>
-      <div class="sheet-sub" id="moveSheetSub">移動するロットを選択してください</div>
+      <div class="sheet-header-txt">
+        <div class="sheet-title" id="moveSheetName">—</div>
+        <div class="sheet-sub" id="moveSheetSub">移動するロットを選択してください</div>
+      </div>
+      <button class="sheet-close" onclick="closeMove()" aria-label="閉じる">✕</button>
     </div>
     <div class="lot-list" id="moveLotList"></div>
     <div class="out-form" id="moveForm" style="display:none">
@@ -1397,8 +1417,11 @@ input::placeholder{color:var(--text3)}
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-title">新商品を追加</div>
-      <div class="sheet-sub">商品マスターに登録します</div>
+      <div class="sheet-header-txt">
+        <div class="sheet-title">新商品を追加</div>
+        <div class="sheet-sub">商品マスターに登録します</div>
+      </div>
+      <button class="sheet-close" onclick="closeNP()" aria-label="閉じる">✕</button>
     </div>
     <div style="padding:16px 0 0">
       <div class="np-form-group">
