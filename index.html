@@ -193,15 +193,15 @@ input::placeholder{color:var(--text3)}
   display:flex;align-items:center;gap:5px;background:#eef6ff;border:1px solid #bcdcff;
   color:#1a5a99;font-size:12px;font-weight:600;padding:8px 10px;border-radius:8px;margin-bottom:12px;
 }
-.case-add-row{display:flex;gap:8px;margin-top:10px}
+.case-add-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .case-add-row input{
-  flex:1;padding:11px 12px;border:1.5px solid var(--border2);border-radius:var(--r-sm);
-  font-size:15px;font-family:inherit;
+  flex:1 1 100%;min-width:0;padding:11px 12px;border:1.5px solid var(--border2);border-radius:var(--r-sm);
+  font-size:16px;font-family:inherit;box-sizing:border-box;
 }
 .case-add-row input:focus{border-color:var(--accent);outline:none}
 .case-add-btn{
-  background:var(--accent-l);color:var(--accent-d);border:1.5px solid var(--accent-d);
-  border-radius:var(--r-sm);padding:0 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;
+  flex:1 1 100%;background:var(--accent-l);color:var(--accent-d);border:1.5px solid var(--accent-d);
+  border-radius:var(--r-sm);padding:12px 14px;font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap;
 }
 .case-add-btn:active{transform:scale(.96)}
 .case-draft-list{margin-top:12px}
@@ -218,14 +218,33 @@ input::placeholder{color:var(--text3)}
 .case-draft-memo{flex:1;font-size:14px;color:#5a4a1a;font-weight:600}
 .case-draft-price{font-size:14px;font-weight:800;color:var(--navy);flex-shrink:0}
 .case-draft-rm{background:none;border:none;color:var(--red);font-size:20px;cursor:pointer;padding:0 4px;line-height:1}
-.case-add-row .case-price-in{flex:0 0 42%}
+/* 広い画面では 単価 と メモ を横並びに戻す */
+@media (min-width:520px){
+  .case-add-row .case-price-in{flex:0 0 42%}
+  .case-add-row input{flex:1 1 auto}
+  .case-add-btn{flex:0 0 auto;padding:0 14px;font-size:13px}
+}
 .case-price-hint{font-size:11px;color:var(--text2);margin-top:5px}
+.case-form{box-sizing:border-box;max-width:100%;overflow-x:hidden}
+.case-form .form-date-row input{max-width:100%;box-sizing:border-box}
+.case-form .form-btns{display:flex;gap:8px;margin-top:12px}
+.case-form .form-btns button{flex:1;min-width:0;padding:13px 8px;font-size:15px}
+.case-note{line-height:1.45}
+.case-draft-item{flex-wrap:wrap}
+.case-draft-memo{min-width:0;word-break:break-word}
 
 .case-out-head{
   display:flex;justify-content:space-between;align-items:center;
   font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;padding:0 2px;
 }
 .case-out-selcount{color:var(--accent-d)}
+.case-out-headbtns{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.case-collapse-btn{
+  background:var(--surface3,var(--bg));border:1.5px solid var(--border2);color:var(--navy);
+  font-size:12px;font-weight:700;padding:6px 11px;border-radius:20px;cursor:pointer;white-space:nowrap;
+}
+.case-collapse-btn:active{transform:scale(.95)}
+.case-out-head{flex-wrap:wrap;gap:8px}
 .case-out-list{display:flex;flex-direction:column;gap:8px}
 .case-out-item{
   display:flex;align-items:center;gap:12px;background:var(--surface);
@@ -1490,10 +1509,35 @@ async function startApp() {
   document.getElementById('setupPage').style.display = 'none';
   document.getElementById('mainWrap').style.display = 'block';
   document.getElementById('setUrl').value = API;
-  // 商品リスト(商品コード)と在庫を並列取得。入庫タブは商品リスト基準で表示。
-  // 履歴・集計はタブを開いた時に遅延ロード（初期表示を高速化）
-  await Promise.all([loadProducts(), loadStock()]);
-  renderActiveTab();
+
+  // ★1: 前回セッションのデータがあれば即座に描画（体感速度の改善）
+  //     GASの応答を待たずに画面が出るので「開いた瞬間に見える」ようになる。
+  const ckey = 'boot_' + curWhParam();
+  try {
+    const cached = sessionStorage.getItem(ckey);
+    if (cached) {
+      const d = JSON.parse(cached);
+      products = d.products || [];
+      stock    = (d.stock || []).filter(s => s.name);
+      renderActiveTab();
+    }
+  } catch(e) { /* sessionStorage 不可でも動作継続 */ }
+
+  // ★2: 商品リスト+在庫を1リクエストで取得（旧: getProducts と getStock の2往復）
+  //     GASはリクエストごとにコールドスタートがあるため往復削減が効く。
+  //     履歴・集計はタブを開いた時に遅延ロード（初期表示を高速化）
+  try {
+    const d = await GET('bootstrap');
+    if (d.error) throw new Error(d.error);
+    products = d.products || [];
+    stock    = (d.stock || []).filter(s => s.name);
+    try { sessionStorage.setItem(ckey, JSON.stringify(d)); } catch(e) {}
+    renderActiveTab();
+  } catch(e) {
+    // bootstrap 未対応の旧GASでも動くようフォールバック
+    await Promise.all([loadProducts(), loadStock()]);
+    renderActiveTab();
+  }
 }
 
 // ============================================================
@@ -1671,6 +1715,11 @@ async function loadStock() {
   try {
     const d = await GET('getStock');
     stock = (d.stock || []).filter(s => s.name);
+    // ★書き込み後の再取得なので、次回起動時に古い在庫を出さないようキャッシュを更新
+    try {
+      sessionStorage.setItem('boot_' + curWhParam(),
+        JSON.stringify({ products: products, stock: d.stock || [] }));
+    } catch(e) {}
   } catch(e) {
     stock = [];
     document.getElementById('stockList').innerHTML = '<div class="loading">データ取得失敗</div>';
@@ -1812,7 +1861,12 @@ function renderCaseOut() {
   box.innerHTML = `
     <div class="case-out-head">
       <span>残ケース ${caseOutList.length}件（${prices.length}単価）</span>
-      <span class="case-out-selcount">${selCount ? selCount + '件 選択中' : 'タップで展開'}</span>
+      <span class="case-out-headbtns">
+        <span class="case-out-selcount">${selCount ? selCount + '件 選択中' : 'タップで展開'}</span>
+        ${prices.some(p => _caseGrpOpen[p])
+          ? `<button class="case-collapse-btn" onclick="collapseAllCaseGrp()">▲ すべて閉じる</button>`
+          : `<button class="case-collapse-btn" onclick="expandAllCaseGrp()">▼ すべて開く</button>`}
+      </span>
     </div>
     ${groupsHtml}
     <div class="out-date-row" style="margin-top:12px">
@@ -1825,6 +1879,26 @@ function renderCaseOut() {
 }
 
 // 単価グループの展開状態は上部で宣言済み（_caseGrpOpen）
+
+function collapseAllCaseGrp() {
+  _caseGrpOpen = {};
+  renderCaseOut();
+}
+
+function expandAllCaseGrp() {
+  caseOutList.forEach(c => { _caseGrpOpen[Number(c.unitPrice)] = true; });
+  renderCaseOut();
+}
+
+function collapseAllMoveGrp() {
+  _moveGrpOpen = {};
+  renderMoveCases();
+}
+
+function expandAllMoveGrp() {
+  moveCaseList.forEach(c => { _moveGrpOpen[Number(c.unitPrice)] = true; });
+  renderMoveCases();
+}
 
 function toggleCaseGrp(price) {
   _caseGrpOpen[price] = !_caseGrpOpen[price];
@@ -3306,7 +3380,12 @@ function renderMoveCases(){
   box.innerHTML = `
     <div class="case-out-head">
       <span>残ケース ${moveCaseList.length}件（${prices.length}単価）</span>
-      <span class="case-out-selcount">${selCount ? selCount + '件 選択中' : 'タップで展開'}</span>
+      <span class="case-out-headbtns">
+        <span class="case-out-selcount">${selCount ? selCount + '件 選択中' : 'タップで展開'}</span>
+        ${prices.some(p => _moveGrpOpen[p])
+          ? `<button class="case-collapse-btn" onclick="collapseAllMoveGrp()">▲ すべて閉じる</button>`
+          : `<button class="case-collapse-btn" onclick="expandAllMoveGrp()">▼ すべて開く</button>`}
+      </span>
     </div>
     ${groupsHtml}
     <div class="out-date-row" style="margin-top:12px">
