@@ -176,8 +176,10 @@ input::placeholder{color:var(--text3)}
 /* ロットカード内に表示する入庫メモ */
 .lot-memo-list{
   margin-top:10px;padding-top:10px;border-top:1px dashed var(--border2);
-  display:flex;flex-direction:column;gap:6px;
+  flex-direction:column;gap:6px;
+  display:none;
 }
+.lot-memo-list.open{display:flex}
 .lot-memo-item{
   display:flex;align-items:flex-start;gap:8px;
   background:#fffdf5;border:1px solid #f0e2b0;border-left:3px solid #e6b800;
@@ -186,6 +188,13 @@ input::placeholder{color:var(--text3)}
 .lot-memo-date{font-size:11px;font-weight:700;color:var(--navy);flex-shrink:0;padding-top:1px}
 .lot-memo-text{flex:1;font-size:13px;color:#5a4a1a;line-height:1.45;word-break:break-word;min-width:0}
 .lot-memo-item .memo-edit-btn{font-size:14px;padding:0 2px}
+.lot-memo-toggle{
+  background:transparent;border:none;cursor:pointer;
+  font-size:16px;padding:4px 8px;border-radius:6px;
+  transition:background .15s;line-height:1;
+}
+.lot-memo-toggle:hover{background:var(--surface3)}
+.lot-memo-toggle.active{background:var(--accent-l)}
 
 /* ── ケース管理 ── */
 .case-form{padding:4px 0}
@@ -2129,8 +2138,9 @@ function renderOutLots(lotArr, code, entries) {
     const queuedNote = queued ? `<span style="font-size:11px;color:var(--accent);font-weight:700"> （リスト内 -${fn(queued)}${selProduct.unit}）</span>` : '';
     // この単価に紐づく入庫メモ明細をカード内に表示
     const lotEntries = allEntries.filter(e => Number(e.unitPrice) === Number(l.unitPrice));
+    const isOpen = expandedLots.has(l.unitPrice);
     const memoHtml = lotEntries.length ? `
-      <div class="lot-memo-list" onclick="event.stopPropagation()">
+      <div class="lot-memo-list ${isOpen ? 'open' : ''}" id="lml_${l.unitPrice}" onclick="event.stopPropagation()">
         ${lotEntries.map(e => `
           <div class="lot-memo-item" id="me_${e.rowNum}">
             <span class="lot-memo-date">${e.dateLabel || e.date}</span>
@@ -2139,10 +2149,14 @@ function renderOutLots(lotArr, code, entries) {
           </div>
         `).join('')}
       </div>` : '';
+    const toggleBtn = lotEntries.length ? `<button class="lot-memo-toggle ${isOpen ? 'active' : ''}" onclick="event.stopPropagation();toggleLotMemo(${l.unitPrice})" title="メモ">✏️</button>` : '';
     return `<div class="lot-card" id="lc_${i}" onclick="selLotCard(${i},${l.unitPrice},${remain})">
       <div class="lot-card-top">
         <div class="lot-price">¥${l.unitPrice.toLocaleString()}<span style="font-size:12px;color:var(--text2)"> /単価</span></div>
-        <div class="lot-badge">${remain} ${selProduct.unit}</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          ${toggleBtn}
+          <div class="lot-badge">${remain} ${selProduct.unit}</div>
+        </div>
       </div>
       <div class="lot-card-row">
         <div class="lot-stat"><div class="lot-stat-label">残数量</div><div class="lot-stat-val">${remain} ${selProduct.unit}${queuedNote}</div></div>
@@ -2151,6 +2165,18 @@ function renderOutLots(lotArr, code, entries) {
       ${memoHtml}
     </div>`;
   }).join('');
+}
+
+function toggleLotMemo(unitPrice) {
+  if (expandedLots.has(unitPrice)) {
+    expandedLots.delete(unitPrice);
+  } else {
+    expandedLots.add(unitPrice);
+  }
+  const list = document.getElementById(`lml_${unitPrice}`);
+  const btn = list?.closest('.lot-card')?.querySelector('.lot-memo-toggle');
+  if (list) list.classList.toggle('open');
+  if (btn) btn.classList.toggle('active');
 }
 
 function selLotCard(idx, price, remainQty) {
@@ -2179,6 +2205,7 @@ function closeOut() { document.getElementById('outOverlay').classList.remove('op
 // ============================================================
 let outCart = [];
 let outCartOpen = false;
+const expandedLots = new Set(); // ロットカードでメモを展開中の単価
 let isOutSubmitting = false;
 
 function addOutToCart() {
